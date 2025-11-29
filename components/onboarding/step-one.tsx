@@ -72,16 +72,21 @@ export function StepOne() {
   const weightKg = watch("weight_kg");
   const calorieTarget = watch("calorie_target");
 
+  // Check if we have valid numbers for calculations
+  // Number.isFinite returns false for NaN, Infinity, -Infinity, and non-numbers
+  const hasValidWeight = Number.isFinite(weightKg) && weightKg > 0;
+  const hasValidCalories = Number.isFinite(calorieTarget) && calorieTarget >= 500;
+
   // Calculate macros based on body weight
   // Protein: 1.6g per kg, Fat: 1g per kg, Carbs: remaining calories
-  const proteinTarget = weightKg ? Math.round(weightKg * 1.6) : 0;
-  const fatTarget = weightKg ? Math.round(weightKg * 1) : 0;
-  
+  const proteinTarget = hasValidWeight ? Math.round(weightKg * 1.6) : 0;
+  const fatTarget = hasValidWeight ? Math.round(weightKg * 1) : 0;
+
   // Calculate carbs from remaining calories
   // Protein = 4 cal/g, Fat = 9 cal/g, Carbs = 4 cal/g
   const proteinCalories = proteinTarget * 4;
   const fatCalories = fatTarget * 9;
-  const remainingCalories = calorieTarget ? calorieTarget - proteinCalories - fatCalories : 0;
+  const remainingCalories = hasValidCalories ? calorieTarget - proteinCalories - fatCalories : 0;
   const carbsTarget = remainingCalories > 0 ? Math.round(remainingCalories / 4) : 0;
 
   return (
@@ -302,7 +307,7 @@ export function StepOne() {
           </div>
 
           {/* Calculated Macros Display */}
-          {weightKg && calorieTarget && calorieTarget >= 500 && (
+          {hasValidWeight && hasValidCalories && (
             <div className="rounded-lg border bg-muted/50 p-4">
               <h4 className="font-medium mb-3">Your Calculated Macros</h4>
               <p className="text-sm text-muted-foreground mb-3">

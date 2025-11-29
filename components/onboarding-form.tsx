@@ -244,7 +244,7 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
       }
 
       // Redirect to dashboard
-      router.push("/protected");
+      router.push("/dashboard");
       router.refresh();
     } catch (err) {
       console.error("Error saving onboarding data:", err);
@@ -275,21 +275,19 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
           {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((step) => (
             <div key={step} className="flex items-center">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
-                  step === currentStep
-                    ? "bg-primary text-primary-foreground"
-                    : step < currentStep
-                      ? "bg-primary/20 text-primary"
-                      : "bg-muted text-muted-foreground"
-                }`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${step === currentStep
+                  ? "bg-primary text-primary-foreground"
+                  : step < currentStep
+                    ? "bg-primary/20 text-primary"
+                    : "bg-muted text-muted-foreground"
+                  }`}
               >
                 {step}
               </div>
               {step < TOTAL_STEPS && (
                 <div
-                  className={`w-12 h-1 mx-1 rounded ${
-                    step < currentStep ? "bg-primary/20" : "bg-muted"
-                  }`}
+                  className={`w-12 h-1 mx-1 rounded ${step < currentStep ? "bg-primary/20" : "bg-muted"
+                    }`}
                 />
               )}
             </div>
