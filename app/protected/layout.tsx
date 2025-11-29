@@ -1,15 +1,30 @@
+import { redirect } from "next/navigation";
 import { EnvVarWarning } from "@/components/env-var-warning";
 import { AuthButton } from "@/components/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
+import { checkOnboardingStatus } from "@/lib/supabase/onboarding";
 import Link from "next/link";
 import { Suspense } from "react";
 
-export default function ProtectedLayout({
+export default async function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { isAuthenticated, hasCompletedOnboarding } =
+    await checkOnboardingStatus();
+
+  // Not logged in -> redirect to login
+  if (!isAuthenticated) {
+    redirect("/auth/login");
+  }
+
+  // Not completed onboarding -> redirect to onboarding
+  if (!hasCompletedOnboarding) {
+    redirect("/onboarding");
+  }
+
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-20 items-center">
