@@ -346,7 +346,13 @@ export function SuggestionWizard({
         };
 
     startSaveTransition(async () => {
-      const result = await saveAiRecipeAction(mealToSave, completion);
+      // Pass mealType to save to the correct meal plan slot
+      const result = await saveAiRecipeAction(
+        mealToSave, 
+        completion,
+        mealType, // breakfast, lunch, dinner, or snack
+        undefined // planDate - defaults to today
+      );
       
       if ("error" in result) {
         console.error("Failed to save recipe:", result.error);
@@ -520,30 +526,43 @@ export function SuggestionWizard({
     setIsUploading(true);
     setUploadError(null);
     try {
-      const response = await fetch('/api/analyze-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageDataUrl }),
+      const response = await fetch("/api/analyze-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          image: imageDataUrl,
+          saveToStorage: true, // Save to Supabase storage and database
+        }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to analyze image.');
-      }
-
       const data = await response.json();
-      // Prepend new ingredients to existing ones, avoiding duplicates
-      const existingIngredients = ingredients.split(',').map(s => s.trim()).filter(Boolean);
-      const newIngredients = data.ingredients.filter((ing: string) => !existingIngredients.includes(ing));
       
-      if (newIngredients.length > 0) {
-        setIngredients(prev => [
-            ...prev.split(',').map(s => s.trim()).filter(Boolean),
-            ...newIngredients
-        ].join(', '));
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to analyze image.");
       }
 
+      // Prepend new ingredients to existing ones, avoiding duplicates
+      const existingIngredients = ingredients
+        .split(",")
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean);
+      const newIngredients = (data.ingredients as string[]).filter(
+        (ing: string) => !existingIngredients.includes(ing.toLowerCase())
+      );
+
+      if (newIngredients.length > 0) {
+        setIngredients((prev) =>
+          [
+            ...prev
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean),
+            ...newIngredients,
+          ].join(", ")
+        );
+      }
     } catch (err) {
+      console.error("Image upload error:", err);
       setUploadError((err as Error).message);
     } finally {
       setIsUploading(false);

@@ -10,6 +10,8 @@ type SelectedMeal = {
   difficulty?: "Easy" | "Medium" | "Hard";
 };
 
+type MealType = Database["public"]["Enums"]["meal_type"];
+
 function parseEstimatedTimeToMinutes(time?: string): number | null {
   if (!time) return null;
   // naive parse: take first number
@@ -36,8 +38,10 @@ function mapDifficultyToEnum(
 
 export async function saveAiRecipeAction(
   selectedMeal: SelectedMeal,
-  fullRecipeMarkdown: string
-): Promise<{ id: number } | { error: string }> {
+  fullRecipeMarkdown: string,
+  mealType: MealType = "lunch",
+  planDate?: string // ISO date string like "2025-11-29"
+): Promise<{ id: number; mealPlanItemId?: number } | { error: string }> {
   const supabase = await createClient();
 
   const {
@@ -53,7 +57,7 @@ export async function saveAiRecipeAction(
   const difficultyEnum = mapDifficultyToEnum(selectedMeal.difficulty);
 
   // Store whole recipe as markdown in `description`
-  const { data, error } = await supabase
+  const { data: recipe, error: recipeError } = await supabase
     .from("recipes")
     .insert({
       user_id: user.id,
@@ -68,10 +72,72 @@ export async function saveAiRecipeAction(
     .select("id")
     .single();
 
-  if (error) {
-    console.error("Failed to save recipe", error);
-    return { error: error.message };
+  if (recipeError) {
+    console.error("Failed to save recipe", recipeError);
+    return { error: recipeError.message };
   }
 
-  return { id: data.id };
+  // Add to meal plan for today (or specified date)
+  const targetDate = planDate || new Date().toISOString().split("T")[0];
+  
+  // Get or create meal plan for the target date
+  let { data: mealPlan } = await supabase
+    .from("meal_plans")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("plan_date", targetDate)
+    .single();
+
+  if (!mealPlan) {
+    // Create a new meal plan for this date
+    const { data: newPlan, error: planError } = await supabase
+      .from("meal_plans")
+      .insert({
+        user_id: user.id,
+        plan_date: targetDate,
+      })
+      .select("id")
+      .single();
+
+    if (planError) {
+      console.error("Failed to create meal plan", planError);
+      // Recipe was saved, just couldn't add to plan
+      return { id: recipe.id };
+    }
+    mealPlan = newPlan;
+  }
+
+  // Get the highest position for this meal type
+  const { data: existingItems } = await supabase
+    .from("meal_plan_items")
+    .select("position")
+    .eq("meal_plan_id", mealPlan.id)
+    .eq("meal_type", mealType)
+    .order("position", { ascending: false })
+    .limit(1);
+
+  const nextPosition = existingItems && existingItems.length > 0 
+    ? (existingItems[0].position || 0) + 1 
+    : 1;
+
+  // Add recipe to meal plan
+  const { data: mealPlanItem, error: itemError } = await supabase
+    .from("meal_plan_items")
+    .insert({
+      meal_plan_id: mealPlan.id,
+      recipe_id: recipe.id,
+      meal_type: mealType,
+      servings: 1,
+      position: nextPosition,
+    })
+    .select("id")
+    .single();
+
+  if (itemError) {
+    console.error("Failed to add to meal plan", itemError);
+    // Recipe was saved, just couldn't add to plan
+    return { id: recipe.id };
+  }
+
+  return { id: recipe.id, mealPlanItemId: mealPlanItem.id };
 }
