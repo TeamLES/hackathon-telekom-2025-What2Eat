@@ -1,34 +1,24 @@
-import { redirect } from "next/navigation";
-
 import { createClient } from "@/lib/supabase/server";
-import { Suspense } from "react";
+import { DashboardClient } from "@/components/dashboard-client";
 
-async function UserDetails() {
+async function getUserData() {
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.getClaims();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (error || !data?.claims) {
-    redirect("/auth/login");
-  }
+  if (!user) return null;
 
-  return data.claims.email || "No email";
+  const { data: profile } = await supabase
+    .from("nutrition_profiles")
+    .select("calorie_target, weight_kg")
+    .eq("user_id", user.id)
+    .single();
+
+  return { user, profile };
 }
 
-export default function ProtectedPage() {
-  return (
-    <div className="flex-1 w-full flex flex-col gap-12">
-      <div className="flex flex-col gap-8">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <div className="flex flex-col gap-2">
-          <p className="text-muted-foreground">
-            Prihlásený ako: <Suspense fallback="Načítavam..."><UserDetails /></Suspense>
-          </p>
-        </div>
-      </div>
-      <div>
-        <h2 className="font-bold text-2xl mb-4">Tvoj jedálniček</h2>
-        <p className="text-muted-foreground">Obsah bude doplnený...</p>
-      </div>
-    </div>
-  );
+export default async function DashboardPage() {
+  const data = await getUserData();
+  const profile = data?.profile || null;
+
+  return <DashboardClient profile={profile} />;
 }

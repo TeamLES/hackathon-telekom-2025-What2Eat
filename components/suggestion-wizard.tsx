@@ -1,0 +1,422 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { X, ChevronLeft, ChevronRight, Camera, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+
+interface SuggestionWizardProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initialFlow?: "what-to-cook" | "ingredients-needed";
+}
+
+type FlowType = "what-to-cook" | "ingredients-needed" | null;
+type IngredientSource = "use-my-ingredients" | "go-shopping" | null;
+
+// Step definitions
+const STEPS = {
+  initial: 0,
+  ingredientSource: 1,
+  ingredients: 2,
+  preferences: 3,
+  details: 4,
+  portions: 5,
+} as const;
+
+export function SuggestionWizard({ isOpen, onClose, initialFlow }: SuggestionWizardProps) {
+  const [flowType, setFlowType] = useState<FlowType>(null);
+  const [ingredientSource, setIngredientSource] = useState<IngredientSource>(null);
+  const [currentStep, setCurrentStep] = useState(STEPS.initial);
+
+  // Form data
+  const [ingredients, setIngredients] = useState("");
+  const [preferences, setPreferences] = useState("");
+  const [cookingTime, setCookingTime] = useState(30);
+  const [mealType, setMealType] = useState<"snack" | "breakfast" | "lunch" | "dinner">("lunch");
+  const [extraInfo, setExtraInfo] = useState("");
+  const [portions, setPortions] = useState(1);
+  const [mealName, setMealName] = useState("");
+
+  // Handle initial flow when wizard opens
+  useEffect(() => {
+    if (isOpen && initialFlow) {
+      setFlowType(initialFlow);
+      if (initialFlow === "what-to-cook") {
+        setCurrentStep(STEPS.ingredientSource);
+      } else if (initialFlow === "ingredients-needed") {
+        setCurrentStep(STEPS.portions);
+      }
+    }
+  }, [isOpen, initialFlow]);
+
+  const resetWizard = () => {
+    setFlowType(null);
+    setIngredientSource(null);
+    setCurrentStep(STEPS.initial);
+    setIngredients("");
+    setPreferences("");
+    setCookingTime(30);
+    setMealType("lunch");
+    setExtraInfo("");
+    setPortions(1);
+    setMealName("");
+  };
+
+  const handleClose = () => {
+    resetWizard();
+    onClose();
+  };
+
+  const handleFlowSelect = (flow: FlowType) => {
+    setFlowType(flow);
+    if (flow === "what-to-cook") {
+      setCurrentStep(STEPS.ingredientSource);
+    } else if (flow === "ingredients-needed") {
+      setCurrentStep(STEPS.portions);
+    }
+  };
+
+  const handleIngredientSourceSelect = (source: IngredientSource) => {
+    setIngredientSource(source);
+    setCurrentStep(STEPS.ingredients);
+  };
+
+  const handleNext = () => {
+    if (currentStep === STEPS.ingredients) {
+      setCurrentStep(STEPS.preferences);
+    } else if (currentStep === STEPS.preferences) {
+      setCurrentStep(STEPS.details);
+    } else if (currentStep === STEPS.details) {
+      // Submit and close
+      handleSubmit();
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep === STEPS.ingredientSource) {
+      setCurrentStep(STEPS.initial);
+      setFlowType(null);
+    } else if (currentStep === STEPS.ingredients) {
+      setCurrentStep(STEPS.ingredientSource);
+      setIngredientSource(null);
+    } else if (currentStep === STEPS.preferences) {
+      setCurrentStep(STEPS.ingredients);
+    } else if (currentStep === STEPS.details) {
+      setCurrentStep(STEPS.preferences);
+    } else if (currentStep === STEPS.portions) {
+      setCurrentStep(STEPS.initial);
+      setFlowType(null);
+    }
+  };
+
+  const handleSubmit = () => {
+    // TODO: Submit to API
+    console.log({
+      flowType,
+      ingredientSource,
+      ingredients,
+      preferences,
+      cookingTime,
+      mealType,
+      extraInfo,
+      portions,
+      mealName,
+    });
+    handleClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
+      <div className="fixed inset-0 md:inset-4 md:m-auto md:max-w-2xl md:h-fit md:max-h-[90vh] bg-background md:rounded-xl md:border md:shadow-lg overflow-auto">
+        {/* Header */}
+        <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-background">
+          <div className="flex items-center gap-2">
+            {currentStep > STEPS.initial && (
+              <Button variant="ghost" size="icon" onClick={handleBack}>
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+            )}
+            <h2 className="text-lg font-semibold">
+              {currentStep === STEPS.initial && "What do you need?"}
+              {currentStep === STEPS.ingredientSource && "Choose your approach"}
+              {currentStep === STEPS.ingredients && "Your ingredients"}
+              {currentStep === STEPS.preferences && "Your preferences"}
+              {currentStep === STEPS.details && "Final details"}
+              {currentStep === STEPS.portions && "What do you want to cook?"}
+            </h2>
+          </div>
+          <Button variant="ghost" size="icon" onClick={handleClose}>
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 md:p-6">
+          {/* Step 0: Initial choice */}
+          {currentStep === STEPS.initial && (
+            <div className="space-y-4">
+              <p className="text-muted-foreground text-center mb-6">
+                Choose what kind of help you need
+              </p>
+
+              <Card
+                className={cn(
+                  "cursor-pointer transition-all hover:border-primary",
+                  flowType === "what-to-cook" && "border-primary bg-primary/5"
+                )}
+                onClick={() => handleFlowSelect("what-to-cook")}
+              >
+                <CardHeader>
+                  <CardTitle className="text-lg">🤔 What should I cook?</CardTitle>
+                  <CardDescription>
+                    Don't know what to eat, but you want to cook yourself?
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+
+              <Card
+                className={cn(
+                  "cursor-pointer transition-all hover:border-primary",
+                  flowType === "ingredients-needed" && "border-primary bg-primary/5"
+                )}
+                onClick={() => handleFlowSelect("ingredients-needed")}
+              >
+                <CardHeader>
+                  <CardTitle className="text-lg">📝 What ingredients do I need?</CardTitle>
+                  <CardDescription>
+                    Already chose your meal but don't know the ingredients or recipe?
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </div>
+          )}
+
+          {/* Step 1: Ingredient source */}
+          {currentStep === STEPS.ingredientSource && (
+            <div className="space-y-4">
+              <p className="text-muted-foreground text-center mb-6">
+                How do you want to get ingredients?
+              </p>
+
+              <Card
+                className={cn(
+                  "cursor-pointer transition-all hover:border-primary",
+                  ingredientSource === "use-my-ingredients" && "border-primary bg-primary/5"
+                )}
+                onClick={() => handleIngredientSourceSelect("use-my-ingredients")}
+              >
+                <CardHeader>
+                  <CardTitle className="text-lg">🧊 I want to use my ingredients</CardTitle>
+                  <CardDescription>
+                    Tell us what you have and we'll suggest what you can make
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+
+              <Card
+                className={cn(
+                  "cursor-pointer transition-all hover:border-primary",
+                  ingredientSource === "go-shopping" && "border-primary bg-primary/5"
+                )}
+                onClick={() => handleIngredientSourceSelect("go-shopping")}
+              >
+                <CardHeader>
+                  <CardTitle className="text-lg">🛒 I will go shopping</CardTitle>
+                  <CardDescription>
+                    We'll suggest meals and give you a shopping list
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </div>
+          )}
+
+          {/* Step 2: Ingredients */}
+          {currentStep === STEPS.ingredients && (
+            <div className="space-y-6">
+              <div className="bg-muted/50 rounded-lg p-4">
+                <h3 className="font-medium mb-2">
+                  {ingredientSource === "use-my-ingredients"
+                    ? "What ingredients do you have?"
+                    : "Any ingredients you want to include?"}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {ingredientSource === "use-my-ingredients"
+                    ? "List the ingredients you have in your fridge/pantry"
+                    : "Optional: specify ingredients you'd like to use"}
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1">
+                    <Camera className="w-4 h-4 mr-2" />
+                    Take photo
+                  </Button>
+                  <Button variant="outline" className="flex-1">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload image
+                  </Button>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">or type</span>
+                  </div>
+                </div>
+
+                <Textarea
+                  placeholder="e.g. chicken, rice, tomatoes, onion, garlic..."
+                  value={ingredients}
+                  onChange={(e) => setIngredients(e.target.value)}
+                  rows={4}
+                />
+              </div>
+
+              <Button onClick={handleNext} className="w-full" size="lg">
+                Continue
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          )}
+
+          {/* Step 3: Preferences */}
+          {currentStep === STEPS.preferences && (
+            <div className="space-y-6">
+              <div className="bg-muted/50 rounded-lg p-4">
+                <h3 className="font-medium mb-2">Your preferences</h3>
+                <p className="text-sm text-muted-foreground">
+                  Your dietary restrictions and preferences from your profile will be applied automatically.
+                </p>
+              </div>
+
+              <Textarea
+                placeholder="Any additional preferences? e.g. I want something spicy, no raw fish..."
+                value={preferences}
+                onChange={(e) => setPreferences(e.target.value)}
+                rows={3}
+              />
+
+              <Button onClick={handleNext} className="w-full" size="lg">
+                Continue
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          )}
+
+          {/* Step 4: Details */}
+          {currentStep === STEPS.details && (
+            <div className="space-y-6">
+              {/* Cooking time */}
+              <div className="space-y-3">
+                <Label>Cooking time</Label>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-muted-foreground w-12">5min</span>
+                  <input
+                    type="range"
+                    min={5}
+                    max={120}
+                    step={5}
+                    value={cookingTime}
+                    onChange={(e) => setCookingTime(Number(e.target.value))}
+                    className="flex-1 accent-[hsl(var(--brand-orange))]"
+                  />
+                  <span className="text-sm text-muted-foreground w-16">120+min</span>
+                </div>
+                <p className="text-center font-medium">{cookingTime} minutes</p>
+              </div>
+
+              {/* Meal type */}
+              <div className="space-y-3">
+                <Label>Type of meal</Label>
+                <div className="grid grid-cols-4 gap-2">
+                  {(["snack", "breakfast", "lunch", "dinner"] as const).map((type) => (
+                    <Button
+                      key={type}
+                      type="button"
+                      variant={mealType === type ? "default" : "outline"}
+                      onClick={() => setMealType(type)}
+                      className="capitalize"
+                    >
+                      {type}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Extra information */}
+              <div className="space-y-3">
+                <Label>Extra information (optional)</Label>
+                <Textarea
+                  placeholder="Any other details you want to share..."
+                  value={extraInfo}
+                  onChange={(e) => setExtraInfo(e.target.value)}
+                  rows={3}
+                />
+              </div>
+
+              <Button onClick={handleSubmit} className="w-full bg-gradient-to-r from-[hsl(var(--brand-orange))] to-[hsl(280,70%,50%)] hover:opacity-90" size="lg">
+                Get Suggestions ✨
+              </Button>
+            </div>
+          )}
+
+          {/* Step: Portions (for "ingredients needed" flow) */}
+          {currentStep === STEPS.portions && (
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <Label>What meal do you want to cook?</Label>
+                <Input
+                  placeholder="e.g. Spaghetti Carbonara, Chicken Curry..."
+                  value={mealName}
+                  onChange={(e) => setMealName(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label>How many portions?</Label>
+                <div className="flex items-center gap-4 justify-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setPortions(Math.max(1, portions - 1))}
+                  >
+                    -
+                  </Button>
+                  <span className="text-3xl font-bold w-16 text-center">{portions}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setPortions(portions + 1)}
+                  >
+                    +
+                  </Button>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleSubmit}
+                className="w-full bg-gradient-to-r from-[hsl(var(--brand-orange))] to-[hsl(280,70%,50%)] hover:opacity-90"
+                size="lg"
+                disabled={!mealName.trim()}
+              >
+                Get Recipe & Ingredients ✨
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
