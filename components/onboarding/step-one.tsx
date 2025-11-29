@@ -1,7 +1,9 @@
 "use client";
 
 import { useFormContext } from "react-hook-form";
+import { Calculator } from "lucide-react";
 import { OnboardingFormData } from "../onboarding-form";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -70,24 +72,6 @@ export function StepOne() {
   const budgetLevel = watch("budget_level");
   const cookingSkill = watch("cooking_skill");
   const weightKg = watch("weight_kg");
-  const calorieTarget = watch("calorie_target");
-
-  // Check if we have valid numbers for calculations
-  // Number.isFinite returns false for NaN, Infinity, -Infinity, and non-numbers
-  const hasValidWeight = Number.isFinite(weightKg) && weightKg > 0;
-  const hasValidCalories = Number.isFinite(calorieTarget) && calorieTarget >= 500;
-
-  // Calculate macros based on body weight
-  // Protein: 1.6g per kg, Fat: 1g per kg, Carbs: remaining calories
-  const proteinTarget = hasValidWeight ? Math.round(weightKg * 1.6) : 0;
-  const fatTarget = hasValidWeight ? Math.round(weightKg * 1) : 0;
-
-  // Calculate carbs from remaining calories
-  // Protein = 4 cal/g, Fat = 9 cal/g, Carbs = 4 cal/g
-  const proteinCalories = proteinTarget * 4;
-  const fatCalories = fatTarget * 9;
-  const remainingCalories = hasValidCalories ? calorieTarget - proteinCalories - fatCalories : 0;
-  const carbsTarget = remainingCalories > 0 ? Math.round(remainingCalories / 4) : 0;
 
   return (
     <div className="space-y-6">
@@ -278,65 +262,132 @@ export function StepOne() {
 
       {/* Calorie & Macro Targets */}
       <Card>
-        <CardHeader>
-          <CardTitle>Calorie & Macro Targets</CardTitle>
-          <CardDescription>
-            Set your daily calorie target. Protein, fat, and carbs will be calculated automatically based on your weight.
-          </CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between space-y-0">
+          <div>
+            <CardTitle>🎯 Calorie & Macro Targets</CardTitle>
+            <CardDescription>
+              Set your daily targets or auto-calculate based on your body metrics.
+            </CardDescription>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const weight = weightKg;
+              const height = watch("height_cm");
+              const age = watch("age");
+              const gender = watch("gender");
+              const activity = activityLevel;
+              const goal = primaryGoal;
+
+              if (!weight || !height || !age || !gender) {
+                return;
+              }
+
+              // BMR calculation (Mifflin-St Jeor)
+              let bmr: number;
+              if (gender === "male") {
+                bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+              } else {
+                bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+              }
+
+              // Activity multiplier
+              const activityMultipliers: Record<string, number> = {
+                sedentary: 1.2,
+                lightly_active: 1.375,
+                moderately_active: 1.55,
+                very_active: 1.725,
+                athlete: 1.9,
+              };
+              const multiplier = activityMultipliers[activity || "sedentary"] || 1.2;
+              let tdee = Math.round(bmr * multiplier);
+
+              // Goal adjustment
+              if (goal === "lose_weight") {
+                tdee = Math.round(tdee * 0.8);
+              } else if (goal === "gain_muscle") {
+                tdee = Math.round(tdee * 1.1);
+              }
+
+              // Macro distribution
+              const proteinG = Math.round(weight * 2);
+              const fatG = Math.round((tdee * 0.25) / 9);
+              const proteinCals = proteinG * 4;
+              const fatCals = fatG * 9;
+              const carbsCals = tdee - proteinCals - fatCals;
+              const carbsG = Math.round(carbsCals / 4);
+
+              setValue("calorie_target", tdee, { shouldValidate: true });
+              setValue("protein_target_g", proteinG);
+              setValue("carbs_target_g", carbsG);
+              setValue("fat_target_g", fatG);
+            }}
+            className="gap-2"
+          >
+            <Calculator className="h-4 w-4" />
+            Auto-calculate
+          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Calorie Target */}
-          <div className="space-y-2">
-            <Label htmlFor="calorie_target">
-              Daily Calorie Target <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="calorie_target"
-              type="number"
-              min={500}
-              max={10000}
-              placeholder="e.g. 2000"
-              {...register("calorie_target", { valueAsNumber: true })}
-              className={errors.calorie_target ? "border-destructive" : ""}
-            />
-            {errors.calorie_target && (
-              <p className="text-sm text-destructive">
-                {errors.calorie_target.message}
-              </p>
-            )}
-          </div>
-
-          {/* Calculated Macros Display */}
-          {hasValidWeight && hasValidCalories && (
-            <div className="rounded-lg border bg-muted/50 p-4">
-              <h4 className="font-medium mb-3">Your Calculated Macros</h4>
-              <p className="text-sm text-muted-foreground mb-3">
-                Based on {weightKg}kg body weight: 1.6g protein/kg, 1g fat/kg, remaining calories as carbs
-              </p>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="rounded-md bg-background p-3">
-                  <p className="text-2xl font-bold text-primary">{proteinTarget}g</p>
-                  <p className="text-sm text-muted-foreground">Protein</p>
-                  <p className="text-xs text-muted-foreground">{proteinCalories} kcal</p>
-                </div>
-                <div className="rounded-md bg-background p-3">
-                  <p className="text-2xl font-bold text-primary">{fatTarget}g</p>
-                  <p className="text-sm text-muted-foreground">Fat</p>
-                  <p className="text-xs text-muted-foreground">{fatCalories} kcal</p>
-                </div>
-                <div className="rounded-md bg-background p-3">
-                  <p className="text-2xl font-bold text-primary">{carbsTarget}g</p>
-                  <p className="text-sm text-muted-foreground">Carbs</p>
-                  <p className="text-xs text-muted-foreground">{remainingCalories > 0 ? remainingCalories : 0} kcal</p>
-                </div>
-              </div>
-              {remainingCalories < 0 && (
-                <p className="text-sm text-destructive mt-3">
-                  ⚠️ Your calorie target is too low for the protein and fat requirements. Consider increasing it.
+          {/* Macro inputs grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="calorie_target">
+                🔥 Calories <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="calorie_target"
+                type="number"
+                min={500}
+                max={10000}
+                placeholder="2000"
+                {...register("calorie_target", { valueAsNumber: true })}
+                className={errors.calorie_target ? "border-destructive" : ""}
+              />
+              {errors.calorie_target && (
+                <p className="text-sm text-destructive">
+                  {errors.calorie_target.message}
                 </p>
               )}
             </div>
-          )}
+
+            <div className="space-y-2">
+              <Label htmlFor="protein_target_g">💪 Protein (g)</Label>
+              <Input
+                id="protein_target_g"
+                type="number"
+                placeholder="120"
+                {...register("protein_target_g", { valueAsNumber: true })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="carbs_target_g">🍞 Carbs (g)</Label>
+              <Input
+                id="carbs_target_g"
+                type="number"
+                placeholder="250"
+                {...register("carbs_target_g", { valueAsNumber: true })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="fat_target_g">🥑 Fat (g)</Label>
+              <Input
+                id="fat_target_g"
+                type="number"
+                placeholder="65"
+                {...register("fat_target_g", { valueAsNumber: true })}
+              />
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            💡 Click "Auto-calculate" to compute targets based on your body metrics, activity level, and goals.
+            You can also adjust values manually.
+          </p>
         </CardContent>
       </Card>
 

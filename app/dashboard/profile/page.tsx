@@ -142,6 +142,12 @@ export default function ProfilePage() {
         protein_target_g: nutritionRes.data?.protein_target_g ?? null,
         is_protein_target_manual:
           nutritionRes.data?.is_protein_target_manual ?? false,
+        carbs_target_g: nutritionRes.data?.carbs_target_g ?? null,
+        is_carbs_target_manual:
+          nutritionRes.data?.is_carbs_target_manual ?? false,
+        fat_target_g: nutritionRes.data?.fat_target_g ?? null,
+        is_fat_target_manual:
+          nutritionRes.data?.is_fat_target_manual ?? false,
         meals_per_day: nutritionRes.data?.meals_per_day ?? null,
         budget_level: nutritionRes.data?.budget_level ?? null,
         cooking_skill: nutritionRes.data?.cooking_skill ?? null,
@@ -237,6 +243,10 @@ export default function ProfilePage() {
           is_calorie_target_manual: editForm.is_calorie_target_manual,
           protein_target_g: editForm.protein_target_g,
           is_protein_target_manual: editForm.is_protein_target_manual,
+          carbs_target_g: editForm.carbs_target_g,
+          is_carbs_target_manual: editForm.is_carbs_target_manual,
+          fat_target_g: editForm.fat_target_g,
+          is_fat_target_manual: editForm.is_fat_target_manual,
           meals_per_day: editForm.meals_per_day,
           budget_level: editForm.budget_level,
           cooking_skill: editForm.cooking_skill,

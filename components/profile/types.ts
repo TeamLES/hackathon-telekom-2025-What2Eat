@@ -12,6 +12,10 @@ export type ProfileData = {
   is_calorie_target_manual: boolean;
   protein_target_g: number | null;
   is_protein_target_manual: boolean;
+  carbs_target_g: number | null;
+  is_carbs_target_manual: boolean;
+  fat_target_g: number | null;
+  is_fat_target_manual: boolean;
   meals_per_day: number | null;
   budget_level: string | null;
   cooking_skill: string | null;

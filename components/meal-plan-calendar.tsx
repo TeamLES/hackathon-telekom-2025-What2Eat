@@ -15,6 +15,8 @@ interface MealItem {
   type: "breakfast" | "lunch" | "dinner" | "snack";
   calories?: number;
   protein?: number;
+  carbs?: number;
+  fat?: number;
   cookTime?: number;
   difficulty?: string;
 }
@@ -144,7 +146,7 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
             <div className="overflow-y-auto">
               <div className="p-4 space-y-4">
                 {/* Stats */}
-                <div className="grid grid-cols-3 gap-3">
+                <div className="flex flex-wrap gap-4">
                   {selectedMeal.cookTime && (
                     <div className="flex items-center gap-2 text-sm">
                       <Clock className="w-4 h-4 text-muted-foreground" />
@@ -161,6 +163,18 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
                     <div className="flex items-center gap-2 text-sm">
                       <Dumbbell className="w-4 h-4 text-blue-500" />
                       <span>{selectedMeal.protein}g protein</span>
+                    </div>
+                  )}
+                  {selectedMeal.carbs && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-amber-500">🍞</span>
+                      <span>{selectedMeal.carbs}g carbs</span>
+                    </div>
+                  )}
+                  {selectedMeal.fat && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-green-500">🥑</span>
+                      <span>{selectedMeal.fat}g fat</span>
                     </div>
                   )}
                 </div>

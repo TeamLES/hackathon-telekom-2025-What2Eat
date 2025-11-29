@@ -7,6 +7,8 @@ interface Recipe {
   description: string | null;
   total_calories: number | null;
   protein_g: number | null;
+  carbs_g: number | null;
+  fat_g: number | null;
   cook_time_minutes: number | null;
   difficulty: string | null;
 }
@@ -52,6 +54,8 @@ async function getMealPlans() {
           description,
           total_calories,
           protein_g,
+          carbs_g,
+          fat_g,
           cook_time_minutes,
           difficulty
         )
@@ -78,6 +82,8 @@ async function getMealPlans() {
       type: item.meal_type,
       calories: item.recipes?.total_calories || undefined,
       protein: item.recipes?.protein_g || undefined,
+      carbs: item.recipes?.carbs_g || undefined,
+      fat: item.recipes?.fat_g || undefined,
       cookTime: item.recipes?.cook_time_minutes || undefined,
       difficulty: item.recipes?.difficulty || undefined,
     })),

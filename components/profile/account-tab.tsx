@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { Calculator } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -9,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -260,53 +263,165 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
 
       {/* Nutrition Targets */}
       <Card>
-        <CardHeader>
-          <CardTitle>🎯 Nutrition Targets</CardTitle>
-          <CardDescription>Your daily nutrition goals</CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between space-y-0">
+          <div>
+            <CardTitle>🎯 Nutrition Targets</CardTitle>
+            <CardDescription>Your daily nutrition goals</CardDescription>
+          </div>
+          {isEditing && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                // Calculate using Mifflin-St Jeor formula
+                const weight = editForm.weight_kg;
+                const height = editForm.height_cm;
+                const age = editForm.age;
+                const gender = editForm.gender;
+                const activity = editForm.activity_level;
+                const goal = editForm.primary_goal;
+
+                if (!weight || !height || !age || !gender) {
+                  alert("Please fill in your weight, height, age, and gender first.");
+                  return;
+                }
+
+                // BMR calculation (Mifflin-St Jeor)
+                let bmr: number;
+                if (gender === "male") {
+                  bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+                } else {
+                  bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+                }
+
+                // Activity multiplier
+                const activityMultipliers: Record<string, number> = {
+                  sedentary: 1.2,
+                  lightly_active: 1.375,
+                  moderately_active: 1.55,
+                  very_active: 1.725,
+                  athlete: 1.9,
+                };
+                const multiplier = activityMultipliers[activity || "sedentary"] || 1.2;
+                let tdee = Math.round(bmr * multiplier);
+
+                // Goal adjustment
+                if (goal === "lose_weight") {
+                  tdee = Math.round(tdee * 0.8); // 20% deficit
+                } else if (goal === "gain_muscle") {
+                  tdee = Math.round(tdee * 1.1); // 10% surplus
+                }
+
+                // Macro distribution (balanced approach)
+                // Protein: 2g per kg body weight (for active individuals)
+                // Fat: 25% of calories
+                // Carbs: remaining calories
+                const proteinG = Math.round(weight * 2);
+                const fatG = Math.round((tdee * 0.25) / 9);
+                const proteinCals = proteinG * 4;
+                const fatCals = fatG * 9;
+                const carbsCals = tdee - proteinCals - fatCals;
+                const carbsG = Math.round(carbsCals / 4);
+
+                updateField("calorie_target", tdee);
+                updateField("protein_target_g", proteinG);
+                updateField("carbs_target_g", carbsG);
+                updateField("fat_target_g", fatG);
+                updateField("is_calorie_target_manual", false);
+                updateField("is_protein_target_manual", false);
+                updateField("is_carbs_target_manual", false);
+                updateField("is_fat_target_manual", false);
+              }}
+              className="gap-2"
+            >
+              <Calculator className="h-4 w-4" />
+              Auto-calculate
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {isEditing ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="calorie_target">Calorie Target (kcal)</Label>
-                <Input
-                  id="calorie_target"
-                  placeholder="2000"
-                  type="number"
-                  value={editForm.calorie_target ?? ""}
-                  onChange={(e) =>
-                    updateField(
-                      "calorie_target",
-                      e.target.value ? Number(e.target.value) : null
-                    )
-                  }
-                />
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="calorie_target">🔥 Calories (kcal)</Label>
+                  <Input
+                    id="calorie_target"
+                    placeholder="2000"
+                    type="number"
+                    value={editForm.calorie_target ?? ""}
+                    onChange={(e) => {
+                      updateField(
+                        "calorie_target",
+                        e.target.value ? Number(e.target.value) : null
+                      );
+                      updateField("is_calorie_target_manual", true);
+                    }}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="protein_target_g">💪 Protein (g)</Label>
+                  <Input
+                    id="protein_target_g"
+                    type="number"
+                    placeholder="120"
+                    value={editForm.protein_target_g ?? ""}
+                    onChange={(e) => {
+                      updateField(
+                        "protein_target_g",
+                        e.target.value ? Number(e.target.value) : null
+                      );
+                      updateField("is_protein_target_manual", true);
+                    }}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="carbs_target_g">🍞 Carbs (g)</Label>
+                  <Input
+                    id="carbs_target_g"
+                    type="number"
+                    placeholder="250"
+                    value={editForm.carbs_target_g ?? ""}
+                    onChange={(e) => {
+                      updateField(
+                        "carbs_target_g",
+                        e.target.value ? Number(e.target.value) : null
+                      );
+                      updateField("is_carbs_target_manual", true);
+                    }}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="fat_target_g">🥑 Fat (g)</Label>
+                  <Input
+                    id="fat_target_g"
+                    type="number"
+                    placeholder="65"
+                    value={editForm.fat_target_g ?? ""}
+                    onChange={(e) => {
+                      updateField(
+                        "fat_target_g",
+                        e.target.value ? Number(e.target.value) : null
+                      );
+                      updateField("is_fat_target_manual", true);
+                    }}
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="protein_target_g">Protein Target (g)</Label>
-                <Input
-                  id="protein_target_g"
-                  type="number"
-                  placeholder="120"
-                  value={editForm.protein_target_g ?? ""}
-                  onChange={(e) =>
-                    updateField(
-                      "protein_target_g",
-                      e.target.value ? Number(e.target.value) : null
-                    )
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="meals_per_day">Meals per Day</Label>
+                <Label htmlFor="meals_per_day">🍽️ Meals per Day</Label>
                 <Input
                   id="meals_per_day"
                   type="number"
                   min={1}
                   max={10}
                   placeholder="3"
+                  className="w-32"
                   value={editForm.meals_per_day ?? ""}
                   onChange={(e) =>
                     updateField(
@@ -316,28 +431,53 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                   }
                 />
               </div>
+
+              <p className="text-xs text-muted-foreground">
+                💡 Click &quot;Auto-calculate&quot; to compute targets based on your body metrics, activity level, and goals.
+                You can also adjust values manually.
+              </p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-4">
-              <div className="p-4 rounded-lg bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 border border-orange-200 dark:border-orange-800">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                  🔥 Calories
-                </p>
-                <p className="font-bold text-2xl mt-1">
-                  {profile.calorie_target ?? "—"}
-                </p>
-                <p className="text-xs text-muted-foreground">kcal / day</p>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 rounded-lg bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 border border-orange-200 dark:border-orange-800">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                    🔥 Calories
+                  </p>
+                  <p className="font-bold text-2xl mt-1">
+                    {profile.calorie_target ?? "—"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">kcal / day</p>
+                </div>
+                <div className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                    💪 Protein
+                  </p>
+                  <p className="font-bold text-2xl mt-1">
+                    {profile.protein_target_g ?? "—"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">g / day</p>
+                </div>
+                <div className="p-4 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 border border-amber-200 dark:border-amber-800">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                    🍞 Carbs
+                  </p>
+                  <p className="font-bold text-2xl mt-1">
+                    {profile.carbs_target_g ?? "—"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">g / day</p>
+                </div>
+                <div className="p-4 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border border-green-200 dark:border-green-800">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                    🥑 Fat
+                  </p>
+                  <p className="font-bold text-2xl mt-1">
+                    {profile.fat_target_g ?? "—"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">g / day</p>
+                </div>
               </div>
-              <div className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                  💪 Protein
-                </p>
-                <p className="font-bold text-2xl mt-1">
-                  {profile.protein_target_g ?? "—"}
-                </p>
-                <p className="text-xs text-muted-foreground">grams / day</p>
-              </div>
-              <div className="p-4 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border border-green-200 dark:border-green-800">
+              <div className="p-4 rounded-lg bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30 border border-purple-200 dark:border-purple-800 w-fit">
                 <p className="text-xs text-muted-foreground uppercase tracking-wide">
                   🍽️ Meals
                 </p>

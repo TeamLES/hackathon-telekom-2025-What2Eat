@@ -49,6 +49,9 @@ export const onboardingSchema = z.object({
     "save_money",
   ]),
   calorie_target: z.number().min(500).max(10000),
+  protein_target_g: z.number().optional(),
+  carbs_target_g: z.number().optional(),
+  fat_target_g: z.number().optional(),
   meals_per_day: z.number().min(1).max(10),
   budget_level: z.enum(["low", "medium", "high", "no_preference"]),
   cooking_skill: z.enum(["beginner", "intermediate", "advanced"]),
@@ -162,9 +165,10 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
 
       if (profileUpdateError) throw profileUpdateError;
 
-      // Calculate macros based on body weight
-      // Protein: 1.6g per kg, Fat: 1g per kg, Carbs: remaining calories
-      const proteinTarget = Math.round(data.weight_kg * 1.6);
+      // Use provided macro targets or calculate defaults
+      const proteinTarget = data.protein_target_g ?? Math.round(data.weight_kg * 2);
+      const fatTarget = data.fat_target_g ?? Math.round((data.calorie_target * 0.25) / 9);
+      const carbsTarget = data.carbs_target_g ?? Math.round((data.calorie_target - proteinTarget * 4 - fatTarget * 9) / 4);
 
       // 1. Upsert nutrition_profiles
       const { error: profileError } = await supabase
@@ -179,6 +183,8 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
           primary_goal: data.primary_goal as GoalType,
           calorie_target: data.calorie_target,
           protein_target_g: proteinTarget,
+          carbs_target_g: carbsTarget,
+          fat_target_g: fatTarget,
           meals_per_day: data.meals_per_day,
           budget_level: data.budget_level as BudgetLevelType,
           cooking_skill: data.cooking_skill as CookingSkillLevel,
