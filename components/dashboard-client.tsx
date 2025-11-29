@@ -99,8 +99,8 @@ function CircularProgress({
         </div>
       </div>
       <div className="mt-2 text-center">
-        <p className="text-xs font-medium">{label}</p>
-        <p className="text-[10px] text-muted-foreground">/ {Math.round(target)}{unit}</p>
+        <p className="text-sm font-medium">{label}</p>
+        <p className="text-xs text-muted-foreground">{Math.round(target)}{unit}</p>
       </div>
     </div>
   );
