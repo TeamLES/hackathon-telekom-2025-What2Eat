@@ -1,20 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Clock, Flame, Dumbbell } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
+interface MealItem {
+  id: string;
+  recipeId?: number | null;
+  name: string;
+  description?: string | null;
+  type: "breakfast" | "lunch" | "dinner" | "snack";
+  calories?: number;
+  protein?: number;
+  cookTime?: number;
+  difficulty?: string;
+}
+
 interface MealPlanCalendarProps {
   meals?: {
     date: string;
-    meals: {
-      id: string;
-      name: string;
-      type: "breakfast" | "lunch" | "dinner" | "snack";
-      calories?: number;
-    }[];
+    meals: MealItem[];
   }[];
 }
 
@@ -24,9 +32,23 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December"
 ];
 
+const MEAL_TYPE_EMOJI: Record<string, string> = {
+  breakfast: "🌅",
+  lunch: "☀️",
+  dinner: "🌙",
+  snack: "🍿",
+};
+
+const DIFFICULTY_LABELS: Record<string, { label: string; color: string }> = {
+  beginner: { label: "Easy", color: "text-green-600 dark:text-green-400" },
+  intermediate: { label: "Medium", color: "text-yellow-600 dark:text-yellow-400" },
+  advanced: { label: "Hard", color: "text-red-600 dark:text-red-400" },
+};
+
 export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [selectedMeal, setSelectedMeal] = useState<MealItem | null>(null);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -78,6 +100,11 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
 
   const handleDayClick = (day: number) => {
     setSelectedDate(new Date(year, month, day));
+    setSelectedMeal(null);
+  };
+
+  const handleMealClick = (meal: MealItem) => {
+    setSelectedMeal(meal);
   };
 
   // Generate calendar grid
@@ -95,6 +122,93 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
 
   return (
     <div className="space-y-4">
+      {/* Meal Detail Modal */}
+      {selectedMeal && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <Card className="w-full max-w-lg max-h-[80vh] overflow-auto">
+            <CardContent className="p-0">
+              {/* Header */}
+              <div className="sticky top-0 bg-gradient-to-r from-primary/10 to-primary/5 p-4 border-b flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">{MEAL_TYPE_EMOJI[selectedMeal.type] || "🍽️"}</span>
+                  <div>
+                    <h3 className="font-semibold text-lg">{selectedMeal.name}</h3>
+                    <p className="text-sm text-muted-foreground capitalize">{selectedMeal.type}</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setSelectedMeal(null)}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Content */}
+              <div className="p-4 space-y-4">
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-3">
+                  {selectedMeal.cookTime && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span>{selectedMeal.cookTime} min</span>
+                    </div>
+                  )}
+                  {selectedMeal.calories && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Flame className="w-4 h-4 text-orange-500" />
+                      <span>{selectedMeal.calories} kcal</span>
+                    </div>
+                  )}
+                  {selectedMeal.protein && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Dumbbell className="w-4 h-4 text-blue-500" />
+                      <span>{selectedMeal.protein}g protein</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Difficulty */}
+                {selectedMeal.difficulty && DIFFICULTY_LABELS[selectedMeal.difficulty] && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Difficulty:</span>
+                    <span className={cn("text-sm font-medium", DIFFICULTY_LABELS[selectedMeal.difficulty].color)}>
+                      {DIFFICULTY_LABELS[selectedMeal.difficulty].label}
+                    </span>
+                  </div>
+                )}
+
+                {/* Description/Recipe */}
+                {selectedMeal.description && (
+                  <div className="pt-2 border-t max-h-[50vh] overflow-y-auto">
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      <ReactMarkdown>{selectedMeal.description}</ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+
+                {/* No description fallback */}
+                {!selectedMeal.description && (
+                  <div className="pt-2 border-t">
+                    <p className="text-sm text-muted-foreground italic">
+                      No detailed recipe saved for this meal.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t bg-muted/30">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setSelectedMeal(null)}
+                >
+                  Close
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Calendar Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">
@@ -153,15 +267,24 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
                   {day}
                   {hasMeals && (
                     <div className="absolute bottom-1 flex gap-0.5">
-                      {dayMeals.slice(0, 3).map((_, i) => (
+                      {dayMeals.slice(0, 3).map((meal, i) => (
                         <div
                           key={i}
                           className={cn(
-                            "w-1 h-1 rounded-full",
+                            "w-1.5 h-1.5 rounded-full",
                             isToday(day) ? "bg-primary-foreground" : "bg-[hsl(var(--brand-orange))]"
                           )}
+                          title={meal.name}
                         />
                       ))}
+                      {dayMeals.length > 3 && (
+                        <span className={cn(
+                          "text-[8px] ml-0.5",
+                          isToday(day) ? "text-primary-foreground" : "text-muted-foreground"
+                        )}>
+                          +{dayMeals.length - 3}
+                        </span>
+                      )}
                     </div>
                   )}
                 </button>
@@ -175,7 +298,8 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
       {selectedDate && (
         <Card>
           <CardContent className="p-4">
-            <h3 className="font-medium mb-3">
+            <h3 className="font-medium mb-3 flex items-center gap-2">
+              <span>📅</span>
               {selectedDate.toLocaleDateString("en-US", {
                 weekday: "long",
                 month: "long",
@@ -184,28 +308,51 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
             </h3>
 
             {selectedDayMeals.length === 0 ? (
-              <p className="text-muted-foreground text-sm">
-                No meals planned for this day. Click the + button to add a meal!
-              </p>
+              <div className="text-center py-6">
+                <div className="text-4xl mb-2">🍽️</div>
+                <p className="text-muted-foreground text-sm">
+                  No meals planned for this day.
+                </p>
+                <p className="text-muted-foreground text-xs mt-1">
+                  Use the Search to find and add meals!
+                </p>
+              </div>
             ) : (
               <div className="space-y-2">
                 {selectedDayMeals.map((meal) => (
-                  <div
+                  <button
                     key={meal.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                    onClick={() => handleMealClick(meal)}
+                    className="w-full text-left flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
                   >
-                    <div>
-                      <p className="font-medium">{meal.name}</p>
-                      <p className="text-sm text-muted-foreground capitalize">
-                        {meal.type}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{MEAL_TYPE_EMOJI[meal.type] || "🍽️"}</span>
+                      <div>
+                        <p className="font-medium group-hover:text-primary transition-colors">
+                          {meal.name}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="capitalize">{meal.type}</span>
+                          {meal.cookTime && (
+                            <>
+                              <span>•</span>
+                              <span>{meal.cookTime} min</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    {meal.calories && (
-                      <span className="text-sm text-muted-foreground">
-                        {meal.calories} kcal
+                    <div className="flex items-center gap-3">
+                      {meal.calories && (
+                        <span className="text-sm text-muted-foreground">
+                          {meal.calories} kcal
+                        </span>
+                      )}
+                      <span className="text-muted-foreground group-hover:text-primary transition-colors">
+                        →
                       </span>
-                    )}
-                  </div>
+                    </div>
+                  </button>
                 ))}
               </div>
             )}

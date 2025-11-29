@@ -211,18 +211,26 @@ export default function SearchPage() {
           "Hard": "advanced",
         };
 
+        // Combine short description with full recipe markdown
+        // Truncate if needed (description field may have limits)
+        const fullDescription = recipeContent
+          ? `${selectedMeal.description}\n\n---\n\n${recipeContent}`.slice(0, 10000)
+          : selectedMeal.description;
+
         // First, save the recipe to recipes table (or find existing)
         // For now, we'll create a simple recipe entry
         const { data: recipe, error: recipeError } = await supabase
           .from("recipes")
           .insert({
             title: selectedMeal.name,
-            description: selectedMeal.description,
+            description: fullDescription,
             cook_time_minutes: parseInt(selectedMeal.estimatedTime) || 30,
             difficulty: difficultyMap[selectedMeal.difficulty] || "beginner",
             source: "ai_generated",
             is_public: false,
             user_id: userData.user.id,
+            total_calories: selectedMeal.calories || null,
+            protein_g: selectedMeal.protein || null,
           })
           .select("id")
           .single();
@@ -335,43 +343,47 @@ export default function SearchPage() {
       {/* Step 1: Search */}
       {currentStep === "search" && (
         <>
-          <div className="flex gap-2 mb-6">
-            <Input
-              placeholder="e.g., Quick chicken dinner, healthy salad, comfort food..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="text-lg py-6"
-              disabled={isLoading}
-            />
-            <Button
-              onClick={() => handleSearch()}
-              disabled={isLoading || !query.trim()}
-              size="lg"
-              className="px-8"
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <span className="animate-spin">⏳</span>
-                  Searching...
-                </span>
-              ) : (
-                "Search"
-              )}
-            </Button>
-          </div>
+          {/* Search Input with nicer styling */}
+          <Card className="mb-6 overflow-hidden border-2 border-primary/20 focus-within:border-primary transition-colors">
+            <CardContent className="p-0">
+              <div className="flex items-center">
+                <span className="pl-4 text-2xl">🔍</span>
+                <Input
+                  placeholder="What are you craving? Try 'quick pasta' or 'healthy dinner'..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="text-lg py-6 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  disabled={isLoading}
+                />
+                <Button
+                  onClick={() => handleSearch()}
+                  disabled={isLoading || !query.trim()}
+                  size="lg"
+                  className="m-2 px-6 bg-gradient-to-r from-[hsl(var(--brand-orange))] to-[hsl(280,70%,50%)] hover:opacity-90"
+                >
+                  {isLoading ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    "Search"
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
+          {/* Example queries in a nicer grid */}
           <div className="mb-8">
-            <p className="text-sm text-muted-foreground mb-3 text-center">
-              Try one of these examples:
+            <p className="text-sm text-muted-foreground mb-4 text-center">
+              ✨ Try one of these ideas:
             </p>
-            <div className="flex flex-wrap gap-2 justify-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {EXAMPLE_QUERIES.map((example) => (
                 <Button
                   key={example}
                   variant="outline"
                   size="sm"
-                  className="text-sm"
+                  className="text-sm h-auto py-3 justify-start hover:border-primary hover:bg-primary/5"
                   onClick={() => {
                     setQuery(example);
                     handleSearch(example);
@@ -385,14 +397,33 @@ export default function SearchPage() {
 
           {/* Loading Animation */}
           {isLoading && (
-            <div className="flex flex-col items-center justify-center py-12 gap-4">
-              <div className="flex gap-1">
-                <span className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-              </div>
-              <p className="text-muted-foreground">Finding delicious recipes for you...</p>
-            </div>
+            <Card className="border-dashed">
+              <CardContent className="py-12">
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <div className="flex gap-2">
+                    <span className="w-4 h-4 bg-[hsl(var(--brand-orange))] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="w-4 h-4 bg-[hsl(280,70%,50%)] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="w-4 h-4 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                  <p className="text-muted-foreground font-medium">Finding delicious recipes for you...</p>
+                  <p className="text-xs text-muted-foreground">This takes just a few seconds</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Empty state with tips */}
+          {!isLoading && !error && (
+            <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-dashed">
+              <CardContent className="py-8 text-center">
+                <div className="text-4xl mb-3">👨‍🍳</div>
+                <h3 className="font-semibold mb-2">AI-Powered Recipe Search</h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  Just describe what you want to eat and I&apos;ll suggest personalized recipes
+                  based on your dietary preferences and cooking skill!
+                </p>
+              </CardContent>
+            </Card>
           )}
         </>
       )}

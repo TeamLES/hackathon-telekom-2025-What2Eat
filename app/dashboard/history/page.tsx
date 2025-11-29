@@ -1,14 +1,21 @@
 import { MealPlanCalendar } from "@/components/meal-plan-calendar";
 import { createClient } from "@/lib/supabase/server";
 
+interface Recipe {
+  id: number;
+  title: string;
+  description: string | null;
+  total_calories: number | null;
+  protein_g: number | null;
+  cook_time_minutes: number | null;
+  difficulty: string | null;
+}
+
 interface MealPlanItem {
   id: number;
   meal_type: "breakfast" | "lunch" | "dinner" | "snack";
   recipe_id: number | null;
-  recipes: {
-    title: string;
-    total_calories: number | null;
-  } | null;
+  recipes: Recipe | null;
 }
 
 interface MealPlan {
@@ -40,8 +47,13 @@ async function getMealPlans() {
         meal_type,
         recipe_id,
         recipes (
+          id,
           title,
-          total_calories
+          description,
+          total_calories,
+          protein_g,
+          cook_time_minutes,
+          difficulty
         )
       )
     `)
@@ -60,9 +72,14 @@ async function getMealPlans() {
     date: plan.plan_date,
     meals: plan.meal_plan_items.map((item) => ({
       id: String(item.id),
+      recipeId: item.recipes?.id || null,
       name: item.recipes?.title || "Unnamed meal",
+      description: item.recipes?.description || null,
       type: item.meal_type,
       calories: item.recipes?.total_calories || undefined,
+      protein: item.recipes?.protein_g || undefined,
+      cookTime: item.recipes?.cook_time_minutes || undefined,
+      difficulty: item.recipes?.difficulty || undefined,
     })),
   }));
 
