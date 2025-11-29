@@ -17,7 +17,7 @@ export function SidebarNav() {
 
   return (
     <aside className="hidden md:flex fixed left-0 top-[5.5rem] h-[calc(100vh-5.5rem)] w-72 p-4 z-40">
-      <div className="flex h-full w-full flex-col overflow-hidden rounded-[32px] border border-border/70 bg-card/95 dark:bg-secondary/40 shadow-[0_12px_35px_rgba(15,23,42,0.12)] dark:shadow-[0_25px_70px_rgba(15,23,42,0.35)]">
+      <div className="flex h-full w-full flex-col overflow-hidden rounded-[32px] border border-border/70 bg-card dark:bg-[#151515] shadow-[0_12px_35px_rgba(15,23,42,0.12)] dark:shadow-[0_25px_70px_rgba(15,23,42,0.35)]">
         <nav className="flex-1 overflow-y-auto px-4 py-6">
           <div className="space-y-2">
             {navItems.map((item) => {
@@ -27,17 +27,17 @@ export function SidebarNav() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "group relative flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all",
+                    "group relative flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all hover:shadow-[inset_0_2px_8px_rgba(15,23,42,0.18)] active:shadow-[inset_0_4px_12px_rgba(15,23,42,0.28)] active:bg-muted/60",
                     isActive
-                      ? "border-transparent bg-gradient-to-r from-[hsl(var(--brand-orange))]/15 to-[hsl(var(--brand-orange))]/5 text-foreground shadow-[0_12px_30px_rgba(0,0,0,0.2)]"
+                      ? "border-transparent bg-gradient-to-r from-[hsl(var(--brand-orange))]/15 to-[hsl(var(--brand-orange))]/5 text-foreground shadow-[0_8px_18px_rgba(0,0,0,0.15)]"
                       : "border-transparent text-muted-foreground hover:border-border/80 hover:bg-muted/40 hover:text-foreground dark:hover:bg-white/5"
                   )}
                 >
                   <span
                     className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-2xl border text-sm font-medium transition-all",
+                      "flex h-10 w-10 items-center justify-center rounded-2xl border text-sm font-medium transition-all hover:shadow-[inset_0_2px_6px_rgba(0,0,0,0.2)] active:shadow-[inset_0_4px_10px_rgba(0,0,0,0.3)]",
                       isActive
-                        ? "border-transparent bg-gradient-to-br from-[hsl(var(--brand-orange))] to-[hsl(var(--brand-red))] text-white shadow-[0_10px_25px_rgba(0,0,0,0.25)]"
+                        ? "border-transparent bg-gradient-to-br from-[hsl(var(--brand-orange))] to-[hsl(var(--brand-red))] text-white shadow-[0_8px_20px_rgba(0,0,0,0.2)]"
                         : "border-border/70 bg-transparent text-muted-foreground group-hover:text-foreground"
                     )}
                   >
