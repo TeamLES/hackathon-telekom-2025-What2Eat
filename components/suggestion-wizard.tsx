@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect, useTransition, useRef } from "react";
 import {
   X,
   ChevronLeft,
@@ -13,12 +13,12 @@ import {
   Sparkles,
   Clock,
   Check,
+  RotateCcw,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -80,6 +80,8 @@ export function SuggestionWizard({
   initialFlow,
 }: SuggestionWizardProps) {
   const supabase = createClient();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [flowType, setFlowType] = useState<FlowType>(null);
   const [ingredientSource, setIngredientSource] =
@@ -115,6 +117,13 @@ export function SuggestionWizard({
   const [selectedEquipment, setSelectedEquipment] = useState<number[]>([]);
   const [spicyLevel, setSpicyLevel] = useState<string>("none");
   const [quickPreferences, setQuickPreferences] = useState<string[]>([]);
+
+  // Camera and image state
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   // AI state
   const [completion, setCompletion] = useState("");
@@ -280,6 +289,11 @@ export function SuggestionWizard({
     setSelectedSuggestion(null);
     setSaveSuccess(false);
     stopGeneration();
+    // Reset camera state
+    stopCamera();
+    setCapturedImage(null);
+    setUploadError(null);
+    setIsUploading(false);
   };
 
   // Toggle functions for selections
@@ -480,11 +494,109 @@ export function SuggestionWizard({
     await fetchFullRecipe(requestBody);
   };
 
+  const startCamera = async () => {
+    stopCamera(); // Stop any existing stream
+    setCapturedImage(null);
+    setUploadError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      setCameraStream(stream);
+      setIsCameraOpen(true);
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      setUploadError("Could not access camera. Please check permissions.");
+    }
+  };
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+    }
+    setCameraStream(null);
+    setIsCameraOpen(false);
+  };
+
+  const handleImageUpload = async (imageDataUrl: string) => {
+    setIsUploading(true);
+    setUploadError(null);
+    try {
+      const response = await fetch('/api/analyze-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageDataUrl }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to analyze image.');
+      }
+
+      const data = await response.json();
+      // Prepend new ingredients to existing ones, avoiding duplicates
+      const existingIngredients = ingredients.split(',').map(s => s.trim()).filter(Boolean);
+      const newIngredients = data.ingredients.filter((ing: string) => !existingIngredients.includes(ing));
+      
+      if (newIngredients.length > 0) {
+        setIngredients(prev => [
+            ...prev.split(',').map(s => s.trim()).filter(Boolean),
+            ...newIngredients
+        ].join(', '));
+      }
+
+    } catch (err) {
+      setUploadError((err as Error).message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const context = canvas.getContext('2d');
+      if (context) {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageDataUrl = canvas.toDataURL('image/jpeg');
+        setCapturedImage(imageDataUrl);
+        stopCamera();
+        handleImageUpload(imageDataUrl);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream;
+    }
+  }, [cameraStream]);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
       <div className="fixed inset-0 md:inset-4 md:m-auto md:max-w-2xl md:h-fit md:max-h-[90vh] bg-background md:rounded-xl md:border md:shadow-lg overflow-auto">
+        {/* Hidden canvas for capturing photo */}
+        <canvas ref={canvasRef} className="hidden" />
+
+        {/* Camera Modal */}
+        {isCameraOpen && (
+          <div className="absolute inset-0 z-20 bg-black flex flex-col">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-black/50 flex justify-center items-center gap-4">
+              <Button variant="secondary" onClick={stopCamera}>Cancel</Button>
+              <Button onClick={capturePhoto} size="lg">Snap Photo</Button>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-background">
           <div className="flex items-center gap-2">
@@ -532,7 +644,7 @@ export function SuggestionWizard({
                 <CardHeader>
                   <CardTitle className="text-lg">🤔 What should I cook?</CardTitle>
                   <CardDescription>
-                    Don't know what to eat, but you want to cook yourself?
+                    Don&apos;t know what to eat, but you want to cook yourself?
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -547,7 +659,7 @@ export function SuggestionWizard({
                 <CardHeader>
                   <CardTitle className="text-lg">📝 What ingredients do I need?</CardTitle>
                   <CardDescription>
-                    Already chose your meal but don't know the ingredients or recipe?
+                    Already chose your meal but don&apos;t know the ingredients or recipe?
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -571,7 +683,7 @@ export function SuggestionWizard({
                 <CardHeader>
                   <CardTitle className="text-lg">🧊 I want to use my ingredients</CardTitle>
                   <CardDescription>
-                    Tell us what you have and we'll suggest what you can make
+                    Tell us what you have and we&apos;ll suggest what you can make
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -586,7 +698,7 @@ export function SuggestionWizard({
                 <CardHeader>
                   <CardTitle className="text-lg">🛒 I will go shopping</CardTitle>
                   <CardDescription>
-                    We'll suggest meals and give you a shopping list
+                    We&apos;ll suggest meals and give you a shopping list
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -610,16 +722,45 @@ export function SuggestionWizard({
               </div>
 
               <div className="space-y-4">
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1">
-                    <Camera className="w-4 h-4 mr-2" />
-                    Take photo
-                  </Button>
-                  <Button variant="outline" className="flex-1">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload image
-                  </Button>
-                </div>
+                {/* Image Preview & Uploading State */}
+                {capturedImage && (
+                  <div className="relative group">
+                    <img src={capturedImage} alt="Captured ingredients" className="rounded-lg w-full" />
+                    {isUploading ? (
+                      <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center rounded-lg">
+                        <Loader2 className="w-8 h-8 animate-spin text-white" />
+                        <p className="text-white mt-2">Analyzing ingredients...</p>
+                      </div>
+                    ) : (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                        <Button variant="secondary" onClick={startCamera} className="mr-2">
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Retake
+                        </Button>
+                        <Button variant="destructive" onClick={() => setCapturedImage(null)}>
+                          <X className="w-4 h-4 mr-2" />
+                          Remove
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Upload Buttons */}
+                {!capturedImage && (
+                  <div className="flex gap-2">
+                    <Button variant="outline" className="flex-1" onClick={startCamera}>
+                      <Camera className="w-4 h-4 mr-2" />
+                      Take photo
+                    </Button>
+                    <Button variant="outline" className="flex-1">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload image
+                    </Button>
+                  </div>
+                )}
+
+                {uploadError && <p className="text-sm text-destructive">{uploadError}</p>}
 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
@@ -897,7 +1038,7 @@ export function SuggestionWizard({
                 size="lg"
                 disabled={!mealName.trim()}
               >
-                Get Recipe & Ingredients ✨
+                Get Recipe &amp; Ingredients ✨
               </Button>
             </div>
           )}
