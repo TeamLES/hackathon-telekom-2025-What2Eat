@@ -125,23 +125,23 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
       {/* Meal Detail Modal */}
       {selectedMeal && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <Card className="w-full max-w-lg max-h-[80vh] overflow-auto">
-            <CardContent className="p-0">
-              {/* Header */}
-              <div className="sticky top-0 bg-gradient-to-r from-primary/10 to-primary/5 p-4 border-b flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl">{MEAL_TYPE_EMOJI[selectedMeal.type] || "🍽️"}</span>
-                  <div>
-                    <h3 className="font-semibold text-lg">{selectedMeal.name}</h3>
-                    <p className="text-sm text-muted-foreground capitalize">{selectedMeal.type}</p>
-                  </div>
+          <Card className="w-full max-w-2xl max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex-shrink-0 bg-background p-4 border-b flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">{MEAL_TYPE_EMOJI[selectedMeal.type] || "🍽️"}</span>
+                <div>
+                  <h3 className="font-semibold text-lg">{selectedMeal.name}</h3>
+                  <p className="text-sm text-muted-foreground capitalize">{selectedMeal.type}</p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setSelectedMeal(null)}>
-                  <X className="w-4 h-4" />
-                </Button>
               </div>
+              <Button variant="ghost" size="icon" onClick={() => setSelectedMeal(null)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
 
-              {/* Content */}
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto">
               <div className="p-4 space-y-4">
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-3">
@@ -177,7 +177,7 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
 
                 {/* Description/Recipe */}
                 {selectedMeal.description && (
-                  <div className="pt-2 border-t max-h-[50vh] overflow-y-auto">
+                  <div className="pt-4 border-t">
                     <div className="prose prose-sm dark:prose-invert max-w-none">
                       <ReactMarkdown>{selectedMeal.description}</ReactMarkdown>
                     </div>
@@ -186,25 +186,25 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
 
                 {/* No description fallback */}
                 {!selectedMeal.description && (
-                  <div className="pt-2 border-t">
+                  <div className="pt-4 border-t">
                     <p className="text-sm text-muted-foreground italic">
                       No detailed recipe saved for this meal.
                     </p>
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* Footer */}
-              <div className="p-4 border-t bg-muted/30">
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setSelectedMeal(null)}
-                >
-                  Close
-                </Button>
-              </div>
-            </CardContent>
+            {/* Footer */}
+            <div className="flex-shrink-0 p-4 border-t bg-background">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setSelectedMeal(null)}
+              >
+                Close
+              </Button>
+            </div>
           </Card>
         </div>
       )}
