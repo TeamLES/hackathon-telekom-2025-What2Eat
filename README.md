@@ -1,6 +1,5 @@
 # 🍽️ What2Eat – Telekom Hackathon 2025
-
-Inteligentný generátor personalizovaných jedálničkov založený na preferenciách, cieľoch a diétnych obmedzeniach používateľa. Projekt vznikol počas Telekom Hackathon 2025 a jeho cieľom je ukázať, ako AI dokáže zjednodušiť výživu, plánovanie jedál a zdravý životný štýl.
+Inteligentný generátor personalizovaných jedálničkov, ktorý na základe tvojich preferencií, cieľov a diétnych obmedzení navrhne jedlá aj celý denný plán stravovania. Projekt vznikol počas Telekom Hackathon 2025 a demonštruje, ako môže AI uľahčiť každodenné rozhodovanie – od plánovania jedál, cez zdravší životný štýl, až po šetrenie času a peňazí.
 
 ---
 
