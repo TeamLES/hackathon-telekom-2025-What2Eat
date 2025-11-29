@@ -1,35 +1,40 @@
 # 🍽️ What2Eat – Telekom Hackathon 2025
-Inteligentný generátor personalizovaných jedálničkov, ktorý na základe tvojich preferencií, cieľov a diétnych obmedzení navrhne jedlá aj celý denný plán stravovania. Projekt vznikol počas Telekom Hackathon 2025 a demonštruje, ako môže AI uľahčiť každodenné rozhodovanie – od plánovania jedál, cez zdravší životný štýl, až po šetrenie času a peňazí.
+
+**Never wonder "What should I eat?" again.**
+
+What2Eat is an AI-powered web app that helps you decide what to eat when you're stuck. Based on your preferences, goals, dietary restrictions, and what's in your fridge – it gives you personalized suggestions and tips to make mealtime decisions effortless.
+
+Built during Telekom Hackathon 2025, this project demonstrates how AI can solve an everyday problem we all face: **"I don't know what to eat."**
 
 ---
 
-## 🚀 Funkcionalita
+## 🚀 Features
 
-Systém umožňuje používateľovi zadať široké spektrum údajov o sebe a následne mu odporučí:
-- denné kalorické ciele,
-- odporúčaný príjem bielkovín,
-- personalizované jedlá a recepty,
-- rýchle, lacné, fitness alebo iné preferované jedlá,
-- vynechanie potravín podľa alergií a obmedzení,
-- automatické plánovanie jedál na celý deň alebo týždeň.
+- **Smart food suggestions** – Get personalized recommendations based on your mood, time, and ingredients
+- **Fridge-based ideas** – Tell us what's in your fridge, we'll tell you what to make
+- **Calorie & protein tracking** – Know how many calories you're missing today and hit your protein goals
+- **Dietary preferences** – Respects your allergies, diet type, and favorite cuisines
+- **Activity-aware** – Adjusts suggestions based on whether you exercise or not
+- **Quick vs. detailed** – Need something fast? Or want to cook? We've got both
+- **Budget-friendly options** – Suggestions that won't break the bank
 
 ---
 
-## 🧩 Zber údajov od používateľa
+## 🧩 User Data We Collect
 
 ### 1. Basic Personal Info
 - Gender: male / female / other / prefer not to say
-- Age: number
-- Height: cm
-- Weight: kg
+- Age
+- Height (cm)
+- Weight (kg)
 
 ### 2. Lifestyle & Activity
 - Activity level: Sedentary, Lightly active, Moderately active, Very active, Athlete
-- Daily schedule: Morning person / Night person
+- Daily schedule: Morning person / Night owl
 - Usually rushed in mornings: yes/no
 
 ### 3. Goals
-- Primary goal: Lose weight, Maintain, Gain muscle, Eat healthier, Save time, Save money
+- Primary goal: Lose weight, Maintain weight, Gain muscle, Eat healthier, Save time, Save money
 - Calorie target: Auto-calculate / Manual input
 - Protein goal: Auto (based on weight) / Manual input
 
@@ -39,67 +44,74 @@ Systém umožňuje používateľovi zadať široké spektrum údajov o sebe a n�
 - Flavor profile: Spicy, Mild, Sweet, Savory
 
 ### 5. Dietary Restrictions
-- Vegetarian, Vegan, Gluten-free, Dairy-free, Nut allergy, No pork, No seafood, Other allergy
+- Vegetarian, Vegan, Gluten-free, Dairy-free, Nut allergy, No pork, No seafood, Other allergies
 
 ---
 
-## 🧮 Ako funguje odporúčanie?
+## 🧮 How It Works
 
-1. Základné údaje → výpočet BMR a odporúčaných kalórií  
-2. Ciele → prispôsobenie kalorického a proteínového príjmu  
-3. Preferencie → výber vhodných receptov  
-4. Obmedzenia → filtrovanie nevhodných potravín  
-5. AI generovanie → odporúčané recepty a celý denný plán  
-
----
-
-## 🛠️ Tech stack
-
-Projekt využíva moderný full-stack JavaScript ekosystém:
-
-- **Next.js 15** – App Router, Server Actions, API Routes  
-- **Supabase** – databáza, autentifikácia a perzistencia dát  
-- **Vercel** – hosting, CI/CD, edge runtime  
-- **TypeScript** – typová bezpečnosť  
-- **TailwindCSS** – UI styling  
-- **OpenAI GPT (Telekom Hackathon project)** – generovanie jedálničkov a odporúčaní  
+1. **Your profile** → We calculate your BMR and recommended daily calories
+2. **Your goals** → We adjust calorie and protein recommendations
+3. **Your preferences** → We filter suggestions to match your taste
+4. **Your restrictions** → We exclude anything you can't or won't eat
+5. **AI magic** → We generate personalized "what to eat" suggestions and tips
 
 ---
 
-## 📦 Inštalácia a spustenie
+## 🛠️ Tech Stack
 
-1. Klonovanie repozitára  
-   git clone https://github.com/<your-team>/<project>.git  
-   cd project
+- **Next.js 15** – App Router, Server Actions, API Routes
+- **Supabase** – Database, authentication, and data persistence
+- **Vercel** – Hosting, CI/CD, edge runtime
+- **TypeScript** – Type safety
+- **TailwindCSS** – UI styling
+- **OpenAI GPT** – AI-powered food suggestions and recommendations
 
-2. Inštalácia závislostí  
+---
+
+## 📦 Installation & Setup
+
+1. Clone the repository
+   ```bash
+   git clone https://github.com/TeamLES/hackathon-telekom-2025-What2Eat.git
+   cd hackathon-telekom-2025-What2Eat
+   ```
+
+2. Install dependencies
+   ```bash
    npm install
+   ```
 
-3. Environment variables  
-   cp .env.example .env  
-   doplň Supabase + OpenAI kľúče
+3. Set up environment variables
+   ```bash
+   cp .env.example .env
+   ```
+   Fill in your Supabase and OpenAI API keys.
 
-4. Spustenie projektu  
+4. Run the development server
+   ```bash
    npm run dev
+   ```
 
 ---
 
-## 🤝 Tím
+## 🤝 Team
 
-- Meno 1 – Miroslav Hanisko  
-- Meno 2 – Matej Bendík
-- Meno 3 – Oliver Fecko
-- Meno 4 – Jakub Janok
-- Meno 5 – Lukáš Čeč
+- Miroslav Hanisko
+- Matej Bendík
+- Oliver Fecko
+- Jakub Janok
+- Lukáš Čeč
 
 ---
 
-## 🏁 Stav projektu
+## 🏁 Project Status
 
-Prototyp vyvinutý počas Telekom Hackathon 2025.  
-Možné rozšírenia:
-- generovanie nákupného zoznamu,
-- prepojenie s fitness trackermi,
-- týždenný meal plan,
-- notifikácie,
-- adaptívny jedálniček.
+Prototype developed during Telekom Hackathon 2025.
+
+### Future Ideas
+- 🛒 Generate shopping lists
+- 📱 Connect with fitness trackers
+- 📅 Weekly meal planning
+- 🔔 Meal time notifications
+- 🧠 Learn from your choices over time
