@@ -1,109 +1,106 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# 🍽️ What2Eat – Telekom Hackathon 2025
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+Inteligentný generátor personalizovaných jedálničkov založený na preferenciách, cieľoch a diétnych obmedzeniach používateľa. Projekt vznikol počas Telekom Hackathon 2025 a jeho cieľom je ukázať, ako AI dokáže zjednodušiť výživu, plánovanie jedál a zdravý životný štýl.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+---
 
-## Features
+## 🚀 Funkcionalita
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Proxy
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+Systém umožňuje používateľovi zadať široké spektrum údajov o sebe a následne mu odporučí:
+- denné kalorické ciele,
+- odporúčaný príjem bielkovín,
+- personalizované jedlá a recepty,
+- rýchle, lacné, fitness alebo iné preferované jedlá,
+- vynechanie potravín podľa alergií a obmedzení,
+- automatické plánovanie jedál na celý deň alebo týždeň.
 
-## Demo
+---
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+## 🧩 Zber údajov od používateľa
 
-## Deploy to Vercel
+### 1. Basic Personal Info
+- Gender: male / female / other / prefer not to say
+- Age: number
+- Height: cm
+- Weight: kg
 
-Vercel deployment will guide you through creating a Supabase account and project.
+### 2. Lifestyle & Activity
+- Activity level: Sedentary, Lightly active, Moderately active, Very active, Athlete
+- Daily schedule: Morning person / Night person
+- Usually rushed in mornings: yes/no
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+### 3. Goals
+- Primary goal: Lose weight, Maintain, Gain muscle, Eat healthier, Save time, Save money
+- Calorie target: Auto-calculate / Manual input
+- Protein goal: Auto (based on weight) / Manual input
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+### 4. Eating Preferences
+- Favorite cuisines: Slovak, Italian, Asian, American, Mexican, Mediterranean, Fitness/healthy, Vegetarian/vegan
+- Meal types: Quick meals, Budget meals, High-protein, Comfort food, Low-calorie
+- Flavor profile: Spicy, Mild, Sweet, Savory
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+### 5. Dietary Restrictions
+- Vegetarian, Vegan, Gluten-free, Dairy-free, Nut allergy, No pork, No seafood, Other allergy
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+---
 
-## Clone and run locally
+## 🧮 Ako funguje odporúčanie?
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+1. Základné údaje → výpočet BMR a odporúčaných kalórií  
+2. Ciele → prispôsobenie kalorického a proteínového príjmu  
+3. Preferencie → výber vhodných receptov  
+4. Obmedzenia → filtrovanie nevhodných potravín  
+5. AI generovanie → odporúčané recepty a celý denný plán  
 
-2. Create a Next.js app using the Supabase Starter template npx command
+---
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
+## 🛠️ Tech stack
 
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
+Projekt využíva moderný full-stack JavaScript ekosystém:
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
+- **Next.js 15** – App Router, Server Actions, API Routes  
+- **Supabase** – databáza, autentifikácia a perzistencia dát  
+- **Vercel** – hosting, CI/CD, edge runtime  
+- **TypeScript** – typová bezpečnosť  
+- **TailwindCSS** – UI styling  
+- **OpenAI GPT (Telekom Hackathon project)** – generovanie jedálničkov a odporúčaní  
 
-3. Use `cd` to change into the app's directory
+---
 
-   ```bash
-   cd with-supabase-app
-   ```
+## 📦 Inštalácia a spustenie
 
-4. Rename `.env.example` to `.env.local` and update the following:
+1. Klonovanie repozitára  
+   git clone https://github.com/<your-team>/<project>.git  
+   cd project
 
-  ```env
-  NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[INSERT SUPABASE PROJECT API PUBLISHABLE OR ANON KEY]
-  ```
-  > [!NOTE]
-  > This example uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, which refers to Supabase's new **publishable** key format.
-  > Both legacy **anon** keys and new **publishable** keys can be used with this variable name during the transition period. Supabase's dashboard may show `NEXT_PUBLIC_SUPABASE_ANON_KEY`; its value can be used in this example.
-  > See the [full announcement](https://github.com/orgs/supabase/discussions/29260) for more information.
+2. Inštalácia závislostí  
+   npm install
 
-  Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
+3. Environment variables  
+   cp .env.example .env  
+   doplň Supabase + OpenAI kľúče
 
-5. You can now run the Next.js local development server:
-
-   ```bash
+4. Spustenie projektu  
    npm run dev
-   ```
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+---
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+## 🤝 Tím
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+- Meno 1 – Miroslav Hanisko  
+- Meno 2 – Matej Bendík
+- Meno 3 – Oliver Fecko
+- Meno 4 – Jakub Janok
+- Meno 5 – Lukáš Čeč
 
-## Feedback and issues
+---
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+## 🏁 Stav projektu
 
-## More Supabase examples
-
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+Prototyp vyvinutý počas Telekom Hackathon 2025.  
+Možné rozšírenia:
+- generovanie nákupného zoznamu,
+- prepojenie s fitness trackermi,
+- týždenný meal plan,
+- notifikácie,
+- adaptívny jedálniček.
