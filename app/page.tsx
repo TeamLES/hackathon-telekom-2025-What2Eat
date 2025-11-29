@@ -88,7 +88,7 @@ export default function Home() {
           </div>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight max-w-4xl">
             Never wonder{" "}
-            <span className="text-primary bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+            <span className="text-primary bg-gradient-to-r from-brand-orange to-brand-red bg-clip-text text-transparent">
               "What should I eat?"
             </span>{" "}
             again
@@ -107,13 +107,13 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-8 mt-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <span className="text-green-500">✓</span> Free to use
+              <span className="text-brand-green">✓</span> Free to use
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-green-500">✓</span> Personalized
+              <span className="text-brand-green">✓</span> Personalized
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-green-500">✓</span> AI-powered
+              <span className="text-brand-green">✓</span> AI-powered
             </div>
           </div>
         </div>
@@ -203,7 +203,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="w-full py-20 bg-gradient-to-r from-orange-500/10 to-red-500/10">
+      <section className="w-full py-20 bg-gradient-to-r from-brand-orange/10 to-brand-red/10">
         <div className="max-w-4xl mx-auto px-5 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Ready to stop wondering what to eat?
