@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, createContext, useContext } from "react";
-import { BottomNav, SidebarNav, TopNav } from "@/components/navigation";
 import { SuggestionWizard } from "@/components/suggestion-wizard";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { LogoutButton } from "@/components/logout-button";
+import { BottomNav, SidebarNav, TopNav } from "@/components/navigation";
 
 // Context to share wizard state
 type WizardContextType = {
@@ -42,19 +40,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
     <WizardContext.Provider value={{ openWizard }}>
       <div className="min-h-screen bg-background">
         {/* Mobile top nav */}
-        <TopNav />
+        <TopNav onPlusClick={handlePlusClick} />
 
         {/* Desktop sidebar */}
-        <SidebarNav onPlusClick={handlePlusClick} />
-
-        {/* Desktop header (right side) */}
-        <header className="hidden md:flex fixed top-0 left-64 right-0 h-16 items-center justify-end gap-4 px-6 border-b border-border bg-background z-30">
-          <ThemeSwitcher />
-          <LogoutButton />
-        </header>
+        <SidebarNav />
 
         {/* Main content */}
-        <main className="md:ml-64 md:pt-16 pb-20 md:pb-8">
+        <main className="pt-20 md:pt-24 pb-20 md:pb-12 md:ml-72 transition-[margin]">
           <div className="p-4 md:p-6 max-w-5xl mx-auto">
             {children}
           </div>

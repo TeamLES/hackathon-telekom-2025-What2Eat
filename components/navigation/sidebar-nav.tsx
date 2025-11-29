@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Calendar, User, Plus } from "lucide-react";
+import { Home, Search, Calendar, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: Home },
@@ -13,64 +12,43 @@ const navItems = [
   { href: "/dashboard/profile", label: "Profile", icon: User },
 ];
 
-interface SidebarNavProps {
-  onPlusClick: () => void;
-}
-
-export function SidebarNav({ onPlusClick }: SidebarNavProps) {
+export function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col bg-background border-r border-border z-40">
-      {/* Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-border">
-        <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl">
-          <span>🍽️</span>
-          <span>What2Eat</span>
-        </Link>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 px-4 py-6">
-        <div className="space-y-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
-                  isActive
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                <item.icon className={cn("w-5 h-5", isActive && "text-[hsl(var(--brand-orange))]")} />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Plus button */}
-        <div className="mt-6 px-2">
-          <Button
-            onClick={onPlusClick}
-            className="w-full bg-gradient-to-r from-[hsl(var(--brand-orange))] to-[hsl(280,70%,50%)] hover:opacity-90 text-white"
-            size="lg"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            New Suggestion
-          </Button>
-        </div>
-      </nav>
-
-      {/* Footer with theme */}
-      <div className="p-4 border-t border-border">
-        <p className="text-xs text-muted-foreground text-center">
-          Telekom Hackathon 2025
-        </p>
+    <aside className="hidden md:flex fixed left-0 top-20 h-[calc(100vh-5rem)] w-72 p-4 z-40">
+      <div className="flex h-full w-full flex-col overflow-hidden rounded-[32px] border border-border/70 bg-card/95 dark:bg-secondary/40 shadow-[0_12px_35px_rgba(15,23,42,0.12)] dark:shadow-[0_25px_70px_rgba(15,23,42,0.35)]">
+        <nav className="flex-1 overflow-y-auto px-4 py-6">
+          <div className="space-y-2">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "group relative flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all",
+                    isActive
+                      ? "border-transparent bg-gradient-to-r from-[hsl(var(--brand-orange))]/15 to-[hsl(var(--brand-orange))]/5 text-foreground shadow-[0_12px_30px_rgba(0,0,0,0.2)]"
+                      : "border-transparent text-muted-foreground hover:border-border/80 hover:bg-muted/40 hover:text-foreground dark:hover:bg-white/5"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-2xl border text-sm font-medium transition-all",
+                      isActive
+                        ? "border-transparent bg-gradient-to-br from-[hsl(var(--brand-orange))] to-[hsl(var(--brand-red))] text-white shadow-[0_10px_25px_rgba(0,0,0,0.25)]"
+                        : "border-border/70 bg-transparent text-muted-foreground group-hover:text-foreground"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5" />
+                  </span>
+                  <span className="text-base font-medium">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
       </div>
     </aside>
   );

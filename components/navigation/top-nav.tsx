@@ -1,19 +1,41 @@
 "use client";
 
 import Link from "next/link";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { LogoutButton } from "@/components/logout-button";
 
-export function TopNav() {
+interface TopNavProps {
+  onPlusClick: () => void;
+}
+
+export function TopNav({ onPlusClick }: TopNavProps) {
   return (
-    <header className="md:hidden sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-      <div className="flex h-14 items-center justify-between px-4">
-        <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg">
-          <span>🍽️</span>
-          <span>What2Eat</span>
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+      <div className="flex h-20 items-center gap-4 px-4 md:px-8">
+        <Link href="/dashboard" className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-[hsl(var(--brand-orange))] via-[hsl(var(--brand-orange))] to-[hsl(var(--brand-red))] text-white text-2xl shadow-[0_12px_30px_rgba(0,0,0,0.25)]">
+            🍽️
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              What2Eat
+            </span>
+            <span className="text-xl font-semibold">Dashboard</span>
+          </div>
         </Link>
-        <div className="flex items-center gap-2">
+
+        <div className="ml-auto flex items-center gap-2 md:gap-4">
+          <Button
+            onClick={onPlusClick}
+            className="hidden md:inline-flex rounded-2xl bg-gradient-to-r from-[hsl(var(--brand-orange))] via-[hsl(var(--brand-red))] to-[hsl(280,70%,50%)] px-4 py-2 text-sm font-semibold text-white shadow-[0_15px_35px_rgba(0,0,0,0.25)] hover:opacity-95"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden lg:inline">New Suggestion</span>
+          </Button>
           <ThemeSwitcher />
+          <LogoutButton />
         </div>
       </div>
     </header>
