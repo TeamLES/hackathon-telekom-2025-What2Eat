@@ -383,7 +383,7 @@ export default function SearchPage() {
                   key={example}
                   variant="outline"
                   size="sm"
-                  className="text-sm h-auto py-3 justify-start hover:border-primary hover:bg-primary/5"
+                  className="text-sm whitespace-normal text-center leading-tight h-auto min-h-[2.5rem] px-3 py-2 hover:border-primary hover:bg-primary/5"
                   onClick={() => {
                     setQuery(example);
                     handleSearch(example);
