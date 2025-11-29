@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import {
   X,
   ChevronLeft,
@@ -12,6 +12,7 @@ import {
   Loader2,
   Sparkles,
   Clock,
+  Check,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/lib/database.types";
+import { saveAiRecipeAction } from "@/app/actions/recipes";
 
 interface SuggestionWizardProps {
   isOpen: boolean;
@@ -130,6 +132,10 @@ export function SuggestionWizard({
   };
   const [mealSuggestions, setMealSuggestions] = useState<MealSuggestion[]>([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState<MealSuggestion | null>(null);
+
+  // Saving recipe state
+  const [isSaving, startSaveTransition] = useTransition();
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const stopGeneration = () => {
     if (abortControllerRef.current) {
@@ -272,6 +278,7 @@ export function SuggestionWizard({
     setAiError(null);
     setMealSuggestions([]);
     setSelectedSuggestion(null);
+    setSaveSuccess(false);
     stopGeneration();
   };
 
@@ -298,6 +305,48 @@ export function SuggestionWizard({
     setQuickPreferences((prev) =>
       prev.includes(value) ? prev.filter((x) => x !== value) : [...prev, value]
     );
+  };
+
+  // Save recipe and close
+  const handleSaveAndClose = () => {
+    // Only save if we have a recipe to save
+    if (!completion) {
+      handleClose();
+      return;
+    }
+
+    // Build the meal object to save
+    const mealToSave = selectedSuggestion 
+      ? {
+          name: selectedSuggestion.name,
+          description: selectedSuggestion.description,
+          estimatedTime: selectedSuggestion.estimatedTime,
+          difficulty: selectedSuggestion.difficulty,
+        }
+      : {
+          // For "ingredients-needed" flow, use the meal name they entered
+          name: mealName || "AI Generated Recipe",
+          description: "",
+          estimatedTime: undefined,
+          difficulty: undefined as "Easy" | "Medium" | "Hard" | undefined,
+        };
+
+    startSaveTransition(async () => {
+      const result = await saveAiRecipeAction(mealToSave, completion);
+      
+      if ("error" in result) {
+        console.error("Failed to save recipe:", result.error);
+        // Still close even if save fails
+        handleClose();
+        return;
+      }
+
+      setSaveSuccess(true);
+      // Brief delay to show success state
+      setTimeout(() => {
+        handleClose();
+      }, 500);
+    });
   };
 
   const handleClose = () => {
@@ -1028,13 +1077,26 @@ export function SuggestionWizard({
               {!isAiLoading && completion && (
                 <div className="flex flex-col gap-3 pt-4 border-t">
                   <Button
-                    onClick={handleClose}
+                    onClick={handleSaveAndClose}
+                    disabled={isSaving}
                     className="w-full bg-gradient-to-r from-[hsl(var(--brand-orange))] to-[hsl(280,70%,50%)] hover:opacity-90"
                     size="lg"
                   >
-                    Done
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : saveSuccess ? (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        Saved!
+                      </>
+                    ) : (
+                      "Save & Done"
+                    )}
                   </Button>
-                  {selectedSuggestion && (
+                  {selectedSuggestion && !isSaving && (
                     <Button
                       variant="outline"
                       onClick={() => {
@@ -1048,6 +1110,7 @@ export function SuggestionWizard({
                   )}
                   <Button
                     variant="ghost"
+                    disabled={isSaving}
                     onClick={() => {
                       setMealSuggestions([]);
                       setSelectedSuggestion(null);
