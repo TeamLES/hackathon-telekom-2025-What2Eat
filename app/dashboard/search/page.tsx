@@ -22,13 +22,13 @@ interface MealSuggestion {
 }
 
 const EXAMPLE_QUERIES = [
-  "🍝 Something Italian for dinner",
-  "🥗 Quick healthy lunch under 20 minutes",
+  "🍝 Italian Dinner",
+  "🥗 Quick Healthy Lunch",
   "🍗 Simple chicken dish",
-  "🥦 Vegetarian dinner high in protein",
-  "🍲 Something warm for a cold day",
+  "🥦 High-Protein Veggie Dinner",
+  "🍲 Warm Comfort Food",
   "🥚 Quick high-protein breakfast",
-  "🌮 Something spicy and tasty",
+  "🌮 Spicy & Tasty",
   "🍜 Quick Asian meal",
 ];
 
