@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition, useRef, ChangeEvent } from "react";
+import { useState, useEffect, useTransition, useRef } from "react";
 import {
   X,
   ChevronLeft,
@@ -14,7 +14,6 @@ import {
   Clock,
   Check,
   RotateCcw,
-  ImageIcon,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
@@ -31,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/lib/database.types";
 import { saveAiRecipeAction } from "@/app/actions/recipes";
+import { CookingAnimation } from "@/components/cooking-animation";
 
 interface SuggestionWizardProps {
   isOpen: boolean;
@@ -83,7 +83,6 @@ export function SuggestionWizard({
   const supabase = createClient();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [flowType, setFlowType] = useState<FlowType>(null);
   const [ingredientSource, setIngredientSource] =
@@ -132,7 +131,7 @@ export function SuggestionWizard({
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiError, setAiError] = useState<Error | null>(null);
   const abortControllerRef = { current: null as AbortController | null };
-
+  
   // Meal suggestions (structured data from AI)
   type MealSuggestion = {
     name: string;
@@ -143,6 +142,7 @@ export function SuggestionWizard({
   };
   const [mealSuggestions, setMealSuggestions] = useState<MealSuggestion[]>([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState<MealSuggestion | null>(null);
+  const [previouslyShownMeals, setPreviouslyShownMeals] = useState<string[]>([]);
 
   // Saving recipe state
   const [isSaving, startSaveTransition] = useTransition();
@@ -156,7 +156,7 @@ export function SuggestionWizard({
   };
 
   // Fetch structured meal suggestions (JSON)
-  const fetchMealSuggestions = async (requestBody: Record<string, unknown>) => {
+  const fetchMealSuggestions = async (requestBody: Record<string, unknown>, excludeMeals: string[] = []) => {
     setIsAiLoading(true);
     setMealSuggestions([]);
     setSelectedSuggestion(null);
@@ -166,7 +166,7 @@ export function SuggestionWizard({
       const response = await fetch("/api/meal-suggestions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...requestBody, mode: "suggestions" }),
+        body: JSON.stringify({ ...requestBody, mode: "suggestions", excludeMeals }),
       });
 
       if (!response.ok) {
@@ -174,7 +174,14 @@ export function SuggestionWizard({
       }
 
       const data = await response.json();
-      setMealSuggestions(data.suggestions || []);
+      const suggestions = data.suggestions || [];
+      setMealSuggestions(suggestions);
+      
+      // Track these meal names for future "Get Different Suggestions" requests
+      if (suggestions.length > 0) {
+        const newMealNames = suggestions.map((s: MealSuggestion) => s.name);
+        setPreviouslyShownMeals(prev => [...prev, ...newMealNames]);
+      }
     } catch (error) {
       console.error("AI suggestions error:", error);
       setAiError(error as Error);
@@ -289,6 +296,7 @@ export function SuggestionWizard({
     setAiError(null);
     setMealSuggestions([]);
     setSelectedSuggestion(null);
+    setPreviouslyShownMeals([]);
     setSaveSuccess(false);
     stopGeneration();
     // Reset camera state
@@ -332,30 +340,30 @@ export function SuggestionWizard({
     }
 
     // Build the meal object to save
-    const mealToSave = selectedSuggestion
+    const mealToSave = selectedSuggestion 
       ? {
-        name: selectedSuggestion.name,
-        description: selectedSuggestion.description,
-        estimatedTime: selectedSuggestion.estimatedTime,
-        difficulty: selectedSuggestion.difficulty,
-      }
+          name: selectedSuggestion.name,
+          description: selectedSuggestion.description,
+          estimatedTime: selectedSuggestion.estimatedTime,
+          difficulty: selectedSuggestion.difficulty,
+        }
       : {
-        // For "ingredients-needed" flow, use the meal name they entered
-        name: mealName || "AI Generated Recipe",
-        description: "",
-        estimatedTime: undefined,
-        difficulty: undefined as "Easy" | "Medium" | "Hard" | undefined,
-      };
+          // For "ingredients-needed" flow, use the meal name they entered
+          name: mealName || "AI Generated Recipe",
+          description: "",
+          estimatedTime: undefined,
+          difficulty: undefined as "Easy" | "Medium" | "Hard" | undefined,
+        };
 
     startSaveTransition(async () => {
       // Pass mealType to save to the correct meal plan slot
       const result = await saveAiRecipeAction(
-        mealToSave,
+        mealToSave, 
         completion,
         mealType, // breakfast, lunch, dinner, or snack
         undefined // planDate - defaults to today
       );
-
+      
       if ("error" in result) {
         console.error("Failed to save recipe:", result.error);
         // Still close even if save fails
@@ -460,8 +468,8 @@ export function SuggestionWizard({
 
     // Different flow based on what user is looking for
     if (flowType === "what-to-cook") {
-      // Get structured suggestions first
-      await fetchMealSuggestions(requestBody);
+      // Get structured suggestions first, excluding previously shown meals
+      await fetchMealSuggestions(requestBody, previouslyShownMeals);
     } else {
       // Directly get the recipe for a specific meal
       await fetchFullRecipe(requestBody);
@@ -471,7 +479,7 @@ export function SuggestionWizard({
   // Handle when user selects a meal suggestion
   const handleSelectMeal = async (meal: typeof mealSuggestions[0]) => {
     setSelectedSuggestion(meal);
-
+    
     // Build request with the selected meal
     const requestBody = {
       flowType,
@@ -531,14 +539,14 @@ export function SuggestionWizard({
       const response = await fetch("/api/analyze-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: JSON.stringify({ 
           image: imageDataUrl,
           saveToStorage: true, // Save to Supabase storage and database
         }),
       });
 
       const data = await response.json();
-
+      
       if (!response.ok) {
         throw new Error(data.error || "Failed to analyze image.");
       }
@@ -588,41 +596,6 @@ export function SuggestionWizard({
     }
   };
 
-  const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setUploadError('Please select an image file.');
-      return;
-    }
-
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setUploadError('Image is too large. Maximum size is 10MB.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const imageDataUrl = e.target?.result as string;
-      setCapturedImage(imageDataUrl);
-      handleImageUpload(imageDataUrl);
-    };
-    reader.onerror = () => {
-      setUploadError('Failed to read file. Please try again.');
-    };
-    reader.readAsDataURL(file);
-
-    // Reset input so the same file can be selected again
-    event.target.value = '';
-  };
-
-  const triggerFileUpload = () => {
-    fileInputRef.current?.click();
-  };
-
   useEffect(() => {
     if (cameraStream && videoRef.current) {
       videoRef.current.srcObject = cameraStream;
@@ -636,15 +609,6 @@ export function SuggestionWizard({
       <div className="fixed inset-0 md:inset-4 md:m-auto md:max-w-2xl md:h-fit md:max-h-[90vh] bg-background md:rounded-xl md:border md:shadow-lg overflow-auto">
         {/* Hidden canvas for capturing photo */}
         <canvas ref={canvasRef} className="hidden" />
-
-        {/* Hidden file input for uploading images */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileSelect}
-          className="hidden"
-        />
 
         {/* Camera Modal */}
         {isCameraOpen && (
@@ -787,8 +751,8 @@ export function SuggestionWizard({
               </div>
 
               <div className="space-y-4">
-                {/* Image Preview & Uploading State - only for use-my-ingredients */}
-                {ingredientSource === "use-my-ingredients" && capturedImage && (
+                {/* Image Preview & Uploading State */}
+                {capturedImage && (
                   <div className="relative group">
                     <img src={capturedImage} alt="Captured ingredients" className="rounded-lg w-full" />
                     {isUploading ? (
@@ -811,15 +775,15 @@ export function SuggestionWizard({
                   </div>
                 )}
 
-                {/* Upload Buttons - only for use-my-ingredients */}
-                {ingredientSource === "use-my-ingredients" && !capturedImage && (
+                {/* Upload Buttons */}
+                {!capturedImage && (
                   <div className="flex gap-2">
                     <Button variant="outline" className="flex-1" onClick={startCamera}>
                       <Camera className="w-4 h-4 mr-2" />
                       Take photo
                     </Button>
-                    <Button variant="outline" className="flex-1" onClick={triggerFileUpload}>
-                      <ImageIcon className="w-4 h-4 mr-2" />
+                    <Button variant="outline" className="flex-1">
+                      <Upload className="w-4 h-4 mr-2" />
                       Upload image
                     </Button>
                   </div>
@@ -827,16 +791,14 @@ export function SuggestionWizard({
 
                 {uploadError && <p className="text-sm text-destructive">{uploadError}</p>}
 
-                {ingredientSource === "use-my-ingredients" && (
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">or type</span>
-                    </div>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
                   </div>
-                )}
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">or type</span>
+                  </div>
+                </div>
 
                 <Textarea
                   placeholder="e.g. chicken, rice, tomatoes, onion, garlic..."
@@ -1115,12 +1077,9 @@ export function SuggestionWizard({
             <div className="space-y-6">
               {/* Loading state - fetching suggestions */}
               {isAiLoading && mealSuggestions.length === 0 && !completion && !selectedSuggestion && (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-                  <p className="text-muted-foreground">
-                    {flowType === "what-to-cook" ? "Cooking up some ideas..." : "Preparing your recipe..."}
-                  </p>
-                </div>
+                <CookingAnimation 
+                  message={flowType === "what-to-cook" ? "Cooking up some ideas..." : "Preparing your recipe..."}
+                />
               )}
 
               {/* Error state */}
@@ -1158,7 +1117,7 @@ export function SuggestionWizard({
                       Here are some delicious options based on your preferences
                     </p>
                   </div>
-
+                  
                   <div className="grid gap-4">
                     {mealSuggestions.map((meal, index) => (
                       <button

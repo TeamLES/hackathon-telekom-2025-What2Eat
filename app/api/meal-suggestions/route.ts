@@ -25,6 +25,8 @@ export interface MealSuggestionRequest {
     name: string;
     description: string;
   };
+  // For getting different suggestions
+  excludeMeals?: string[];
 }
 
 // Schema for meal suggestions
@@ -95,10 +97,11 @@ function buildUserPrompt(request: MealSuggestionRequest): string {
   if (request.flowType === "what-to-cook") {
     if (request.ingredientSource === "use-my-ingredients") {
       parts.push(
-        "I want to cook something using ingredients I already have at home."
+        "I want to cook something using some of the ingredients I have at home."
       );
       if (request.ingredients) {
         parts.push(`\nIngredients I have available: ${request.ingredients}`);
+        parts.push(`\nIMPORTANT: You do NOT need to use all of these ingredients. Pick a sensible selection that works well together for each dish. Feel free to suggest recipes that only use 3-6 main ingredients from my list. It's better to make a delicious dish with fewer ingredients than to force all of them into one recipe.`);
       }
     } else {
       parts.push(
@@ -106,7 +109,7 @@ function buildUserPrompt(request: MealSuggestionRequest): string {
       );
       if (request.ingredients) {
         parts.push(
-          `\nI'd prefer to include these ingredients if possible: ${request.ingredients}`
+          `\nI'd prefer to include some of these ingredients if possible: ${request.ingredients}`
         );
       }
     }
@@ -197,14 +200,24 @@ function buildUserPrompt(request: MealSuggestionRequest): string {
 
 function buildSuggestionsPrompt(request: MealSuggestionRequest): string {
   const basePrompt = buildUserPrompt(request);
-  return `${basePrompt}
+  
+  let excludeNote = "";
+  if (request.excludeMeals && request.excludeMeals.length > 0) {
+    excludeNote = `\n\n⚠️ IMPORTANT: Do NOT suggest any of these meals as they were already suggested: ${request.excludeMeals.join(", ")}. Provide completely DIFFERENT meal ideas.`;
+  }
+  
+  return `${basePrompt}${excludeNote}
 
-Based on ALL of the above preferences and constraints, suggest 2-3 meal options. Each suggestion MUST:
+Based on the above preferences and constraints, suggest 2-3 DIVERSE and CREATIVE meal options. Each suggestion MUST:
+- Be a DIFFERENT type of dish (don't suggest 3 similar dishes)
 - Fit within the cooking time constraint if specified
 - Strictly adhere to all dietary restrictions
 - Match the preferred cuisine styles if specified
 - Be achievable with the available kitchen equipment
-- Match the desired spice level and mood preferences`;
+- Match the desired spice level and mood preferences
+- Only use a sensible selection of available ingredients (not all of them)
+
+Be creative and suggest varied options - for example, if one dish is a soup, make another a stir-fry or salad.`;
 }
 
 function buildFullRecipePrompt(request: MealSuggestionRequest): string {
@@ -271,6 +284,7 @@ export async function POST(req: Request) {
       mealName: json.mealName,
       mode: json.mode || "suggestions",
       selectedMeal: json.selectedMeal,
+      excludeMeals: json.excludeMeals || [],
     };
 
     console.log("[meal-suggestions] Mode:", body.mode);
@@ -286,7 +300,7 @@ export async function POST(req: Request) {
         system: buildSystemPrompt(),
         prompt,
         schema: mealSuggestionsSchema,
-        temperature: 0.7,
+        temperature: 0.9,
       });
 
       console.log("[meal-suggestions] Generated suggestions:", result.object);
