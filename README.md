@@ -84,7 +84,7 @@ Built during Telekom Hackathon 2025, this project demonstrates how AI can solve 
 
 3. Set up environment variables
    ```bash
-   cp .env.example .env
+   cp .env.local .env
    ```
    Fill in your Supabase and OpenAI API keys.
 

@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import ProfileForm from "@/components/profile-form";
+import ProfileEditButton from "@/components/profile-edit-button";
 
 async function getProfile() {
   const supabase = await createClient();
@@ -53,50 +55,20 @@ export default async function ProfilePage() {
       </Card>
 
       {/* Nutrition profile */}
-      {profile && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Nutrition Profile</CardTitle>
-            <CardDescription>Your dietary settings</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Age</p>
-                <p className="font-medium">{profile.age} years</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Weight</p>
-                <p className="font-medium">{profile.weight_kg} kg</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Height</p>
-                <p className="font-medium">{profile.height_cm} cm</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Calorie Target</p>
-                <p className="font-medium">{profile.calorie_target} kcal</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Activity Level</p>
-                <p className="font-medium capitalize">{profile.activity_level?.replace("_", " ")}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Goal</p>
-                <p className="font-medium capitalize">{profile.primary_goal?.replace("_", " ")}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Meals per Day</p>
-                <p className="font-medium">{profile.meals_per_day}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Cooking Skill</p>
-                <p className="font-medium capitalize">{profile.cooking_skill}</p>
-              </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between w-full">
+            <div>
+              <CardTitle>Nutrition Profile</CardTitle>
+              <CardDescription>Your dietary settings</CardDescription>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <ProfileEditButton />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ProfileForm initialProfile={profile} showHeader={false} />
+        </CardContent>
+      </Card>
 
       {/* Actions */}
       <Card>
