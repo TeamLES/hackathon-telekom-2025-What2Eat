@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { CookingAnimation } from "@/components/cooking-animation";
 
 interface MealSuggestion {
   name: string;
@@ -398,16 +400,8 @@ export default function SearchPage() {
           {/* Loading Animation */}
           {isLoading && (
             <Card className="border-dashed">
-              <CardContent className="py-12">
-                <div className="flex flex-col items-center justify-center gap-4">
-                  <div className="flex gap-2">
-                    <span className="w-4 h-4 bg-[hsl(var(--brand-orange))] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="w-4 h-4 bg-[hsl(280,70%,50%)] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="w-4 h-4 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                  </div>
-                  <p className="text-muted-foreground font-medium">Finding delicious recipes for you...</p>
-                  <p className="text-xs text-muted-foreground">This takes just a few seconds</p>
-                </div>
+              <CardContent className="py-4">
+                <CookingAnimation message="Finding delicious recipes for you..." />
               </CardContent>
             </Card>
           )}
@@ -504,18 +498,15 @@ export default function SearchPage() {
 
           {/* Loading state */}
           {isLoadingRecipe && !recipeContent && (
-            <div className="flex items-center gap-2 text-muted-foreground py-8 justify-center">
-              <span className="animate-spin">⏳</span>
-              <span>Preparing your recipe...</span>
-            </div>
+            <CookingAnimation message="Preparing your delicious recipe..." />
           )}
 
           {/* Recipe content with markdown */}
           {recipeContent && (
             <Card>
               <CardContent className="pt-6">
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <ReactMarkdown>{recipeContent}</ReactMarkdown>
+                <div className="prose prose-sm dark:prose-invert max-w-none prose-table:border-collapse prose-th:border prose-th:border-border prose-th:p-2 prose-th:bg-muted prose-td:border prose-td:border-border prose-td:p-2">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{recipeContent}</ReactMarkdown>
                 </div>
               </CardContent>
             </Card>
