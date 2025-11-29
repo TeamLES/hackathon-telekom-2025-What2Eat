@@ -46,9 +46,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
         <SidebarNav />
 
         {/* Main content */}
-        <main className="pt-20 md:pt-24 pb-20 md:pb-12 md:ml-72 transition-[margin]">
-          <div className="p-4 md:p-6 max-w-5xl mx-auto">
-            {children}
+        <main className="pt-2 pb-24 md:pt-2 md:pb-4 md:ml-[calc(18rem+1rem)] transition-[margin]">
+          <div className="px-4 pb-4 pt-0 md:px-6">
+            <div className="mx-auto mt-4 max-w-5xl overflow-hidden rounded-[32px] border border-border/70 bg-card/95 dark:bg-secondary/40 shadow-[0_12px_35px_rgba(15,23,42,0.12)] dark:shadow-[0_25px_70px_rgba(15,23,42,0.35)]">
+              <div className="p-4 md:p-8">
+                {children}
+              </div>
+            </div>
           </div>
         </main>
 

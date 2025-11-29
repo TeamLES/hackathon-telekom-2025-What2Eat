@@ -16,7 +16,7 @@ export function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex fixed left-0 top-20 h-[calc(100vh-5rem)] w-72 p-4 z-40">
+    <aside className="hidden md:flex fixed left-0 top-[5.5rem] h-[calc(100vh-5.5rem)] w-72 p-4 z-40">
       <div className="flex h-full w-full flex-col overflow-hidden rounded-[32px] border border-border/70 bg-card/95 dark:bg-secondary/40 shadow-[0_12px_35px_rgba(15,23,42,0.12)] dark:shadow-[0_25px_70px_rgba(15,23,42,0.35)]">
         <nav className="flex-1 overflow-y-auto px-4 py-6">
           <div className="space-y-2">
