@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, ChevronLeft, ChevronRight, Camera, Upload } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Camera, Upload, Flame, Leaf, Clock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { Database } from "@/lib/database.types";
 
 interface SuggestionWizardProps {
   isOpen: boolean;
@@ -17,6 +20,27 @@ interface SuggestionWizardProps {
 
 type FlowType = "what-to-cook" | "ingredients-needed" | null;
 type IngredientSource = "use-my-ingredients" | "go-shopping" | null;
+type Cuisine = Database["public"]["Tables"]["cuisines"]["Row"];
+type DietaryRestriction = Database["public"]["Tables"]["dietary_restrictions"]["Row"];
+type KitchenEquipment = Database["public"]["Tables"]["kitchen_equipment"]["Row"];
+
+// Spicy level options
+const SPICY_LEVELS = [
+  { value: "none", label: "No spice", icon: "🚫" },
+  { value: "mild", label: "Mild", icon: "🌶️" },
+  { value: "medium", label: "Medium", icon: "🌶️🌶️" },
+  { value: "hot", label: "Hot", icon: "🌶️🌶️🌶️" },
+] as const;
+
+// Quick preference tags
+const QUICK_PREFERENCES = [
+  { value: "healthy", label: "Healthy", icon: "🥗" },
+  { value: "quick", label: "Quick & Easy", icon: "⚡" },
+  { value: "comfort", label: "Comfort Food", icon: "🍲" },
+  { value: "light", label: "Light", icon: "🥬" },
+  { value: "filling", label: "Filling", icon: "🍖" },
+  { value: "sweet", label: "Sweet", icon: "🍰" },
+] as const;
 
 // Step definitions
 const STEPS = {
@@ -29,18 +53,59 @@ const STEPS = {
 } as const;
 
 export function SuggestionWizard({ isOpen, onClose, initialFlow }: SuggestionWizardProps) {
+  const supabase = createClient();
+  
   const [flowType, setFlowType] = useState<FlowType>(null);
   const [ingredientSource, setIngredientSource] = useState<IngredientSource>(null);
   const [currentStep, setCurrentStep] = useState(STEPS.initial);
 
+  // Database data
+  const [cuisines, setCuisines] = useState<Cuisine[]>([]);
+  const [dietaryRestrictions, setDietaryRestrictions] = useState<DietaryRestriction[]>([]);
+  const [kitchenEquipment, setKitchenEquipment] = useState<KitchenEquipment[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
   // Form data
   const [ingredients, setIngredients] = useState("");
-  const [preferences, setPreferences] = useState("");
+  const [additionalPreferences, setAdditionalPreferences] = useState("");
   const [cookingTime, setCookingTime] = useState(30);
   const [mealType, setMealType] = useState<"snack" | "breakfast" | "lunch" | "dinner">("lunch");
   const [extraInfo, setExtraInfo] = useState("");
   const [portions, setPortions] = useState(1);
   const [mealName, setMealName] = useState("");
+
+  // Preference selections
+  const [selectedCuisines, setSelectedCuisines] = useState<number[]>([]);
+  const [selectedRestrictions, setSelectedRestrictions] = useState<number[]>([]);
+  const [selectedEquipment, setSelectedEquipment] = useState<number[]>([]);
+  const [spicyLevel, setSpicyLevel] = useState<string>("none");
+  const [quickPreferences, setQuickPreferences] = useState<string[]>([]);
+
+  // Load data from database
+  useEffect(() => {
+    async function loadData() {
+      if (!isOpen) return;
+      
+      setIsLoadingData(true);
+      try {
+        const [cuisinesRes, restrictionsRes, equipmentRes] = await Promise.all([
+          supabase.from("cuisines").select("*").order("name"),
+          supabase.from("dietary_restrictions").select("*").order("label"),
+          supabase.from("kitchen_equipment").select("*").order("label"),
+        ]);
+
+        if (cuisinesRes.data) setCuisines(cuisinesRes.data);
+        if (restrictionsRes.data) setDietaryRestrictions(restrictionsRes.data);
+        if (equipmentRes.data) setKitchenEquipment(equipmentRes.data);
+      } catch (err) {
+        console.error("Error loading data:", err);
+      } finally {
+        setIsLoadingData(false);
+      }
+    }
+
+    loadData();
+  }, [isOpen, supabase]);
 
   // Handle initial flow when wizard opens
   useEffect(() => {
@@ -59,12 +124,43 @@ export function SuggestionWizard({ isOpen, onClose, initialFlow }: SuggestionWiz
     setIngredientSource(null);
     setCurrentStep(STEPS.initial);
     setIngredients("");
-    setPreferences("");
+    setAdditionalPreferences("");
     setCookingTime(30);
     setMealType("lunch");
     setExtraInfo("");
     setPortions(1);
     setMealName("");
+    // Reset preference selections
+    setSelectedCuisines([]);
+    setSelectedRestrictions([]);
+    setSelectedEquipment([]);
+    setSpicyLevel("none");
+    setQuickPreferences([]);
+  };
+
+  // Toggle functions for selections
+  const toggleCuisine = (id: number) => {
+    setSelectedCuisines((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleRestriction = (id: number) => {
+    setSelectedRestrictions((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleEquipment = (id: number) => {
+    setSelectedEquipment((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleQuickPreference = (value: string) => {
+    setQuickPreferences((prev) =>
+      prev.includes(value) ? prev.filter((x) => x !== value) : [...prev, value]
+    );
   };
 
   const handleClose = () => {
@@ -120,7 +216,14 @@ export function SuggestionWizard({ isOpen, onClose, initialFlow }: SuggestionWiz
       flowType,
       ingredientSource,
       ingredients,
-      preferences,
+      // Preference selections
+      selectedCuisines,
+      selectedRestrictions,
+      selectedEquipment,
+      spicyLevel,
+      quickPreferences,
+      additionalPreferences,
+      // Details
       cookingTime,
       mealType,
       extraInfo,
@@ -299,12 +402,142 @@ export function SuggestionWizard({ isOpen, onClose, initialFlow }: SuggestionWiz
                 </p>
               </div>
 
-              <Textarea
-                placeholder="Any additional preferences? e.g. I want something spicy, no raw fish..."
-                value={preferences}
-                onChange={(e) => setPreferences(e.target.value)}
-                rows={3}
-              />
+              {isLoadingData ? (
+                <div className="flex items-center justify-center py-8">
+                  <p className="text-muted-foreground">Loading preferences...</p>
+                </div>
+              ) : (
+                <>
+                  {/* Quick Preferences */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">What are you in the mood for?</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {QUICK_PREFERENCES.map((pref) => (
+                        <button
+                          key={pref.value}
+                          type="button"
+                          onClick={() => toggleQuickPreference(pref.value)}
+                          className={cn(
+                            "flex items-center gap-1.5 px-3 py-2 rounded-full border text-sm transition-colors",
+                            quickPreferences.includes(pref.value)
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "hover:bg-muted"
+                          )}
+                        >
+                          <span>{pref.icon}</span>
+                          <span>{pref.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Spicy Level */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Flame className="w-4 h-4 text-orange-500" />
+                      Spice level
+                    </Label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {SPICY_LEVELS.map((level) => (
+                        <button
+                          key={level.value}
+                          type="button"
+                          onClick={() => setSpicyLevel(level.value)}
+                          className={cn(
+                            "flex flex-col items-center gap-1 p-3 rounded-lg border text-sm transition-colors",
+                            spicyLevel === level.value
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "hover:bg-muted"
+                          )}
+                        >
+                          <span className="text-lg">{level.icon}</span>
+                          <span className="text-xs">{level.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Cuisines */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Preferred cuisines (optional)</Label>
+                    <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                      {cuisines.map((cuisine) => (
+                        <button
+                          key={cuisine.id}
+                          type="button"
+                          onClick={() => toggleCuisine(cuisine.id)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-full border text-sm transition-colors",
+                            selectedCuisines.includes(cuisine.id)
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "hover:bg-muted"
+                          )}
+                        >
+                          {cuisine.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Dietary Restrictions */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Leaf className="w-4 h-4 text-green-500" />
+                      Dietary restrictions (optional)
+                    </Label>
+                    <div className="flex flex-wrap gap-2">
+                      {dietaryRestrictions.map((restriction) => (
+                        <button
+                          key={restriction.id}
+                          type="button"
+                          onClick={() => toggleRestriction(restriction.id)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-full border text-sm transition-colors",
+                            selectedRestrictions.includes(restriction.id)
+                              ? "bg-green-500 text-white border-green-500"
+                              : "hover:bg-muted"
+                          )}
+                        >
+                          {restriction.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Kitchen Equipment */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">What can you use?</Label>
+                    <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                      {kitchenEquipment.map((equipment) => (
+                        <button
+                          key={equipment.id}
+                          type="button"
+                          onClick={() => toggleEquipment(equipment.id)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-full border text-sm transition-colors",
+                            selectedEquipment.includes(equipment.id)
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "hover:bg-muted"
+                          )}
+                        >
+                          {equipment.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Additional Preferences */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Any additional preferences?</Label>
+                    <Textarea
+                      placeholder="e.g. I want something spicy, no raw fish, prefer grilled..."
+                      value={additionalPreferences}
+                      onChange={(e) => setAdditionalPreferences(e.target.value)}
+                      rows={2}
+                    />
+                  </div>
+                </>
+              )}
 
               <Button onClick={handleNext} className="w-full" size="lg">
                 Continue
@@ -318,7 +551,7 @@ export function SuggestionWizard({ isOpen, onClose, initialFlow }: SuggestionWiz
             <div className="space-y-6">
               {/* Cooking time */}
               <div className="space-y-3">
-                <Label>Cooking time</Label>
+                <Label>Max cooking time</Label>
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-muted-foreground w-12">5min</span>
                   <input
