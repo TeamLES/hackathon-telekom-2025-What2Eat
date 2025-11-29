@@ -55,6 +55,7 @@ You should:
 - Suggest creative alternatives when needed
 - Include approximate cooking times and portion sizes
 - Use emojis sparingly to make responses engaging
+- ALWAYS include estimated nutritional information
 
 When providing full recipes, ALWAYS use proper markdown formatting:
 
@@ -87,7 +88,14 @@ Brief description of the dish.
 - **Cook time**: X minutes  
 - **Difficulty**: Easy/Medium/Hard
 
-Always use numbered lists for instructions, bullet points for ingredients, and bold text for emphasis. Add blank lines between sections for readability.`;
+### 📊 Nutrition Facts (per serving)
+
+- **Calories**: XXX kcal
+- **Protein**: XXg
+- **Carbohydrates**: XXg
+- **Fat**: XXg
+
+ALWAYS include the Nutrition Facts section with reasonable estimates based on the ingredients. Use numbered lists for instructions, bullet points for ingredients, and bold text for emphasis. Add blank lines between sections for readability.`;
 }
 
 function buildUserPrompt(request: MealSuggestionRequest): string {
@@ -257,7 +265,8 @@ function buildFullRecipePrompt(request: MealSuggestionRequest): string {
 2. Full ingredients list with exact quantities
 3. Detailed step-by-step cooking instructions
 4. Pro tips for best results
-5. Suggested variations or substitutions`);
+5. Suggested variations or substitutions
+6. IMPORTANT: Include a "Nutrition Facts (per serving)" section with estimated calories, protein (g), carbohydrates (g), and fat (g)`);
 
   return parts.join("");
 }

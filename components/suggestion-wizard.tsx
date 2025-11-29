@@ -34,7 +34,7 @@ import { CookingAnimation } from "@/components/cooking-animation";
 
 interface SuggestionWizardProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (didSaveRecipe?: boolean) => void;
   initialFlow?: "what-to-cook" | "ingredients-needed";
 }
 
@@ -372,16 +372,16 @@ export function SuggestionWizard({
       }
 
       setSaveSuccess(true);
-      // Brief delay to show success state
+      // Brief delay to show success state, then close with refresh signal
       setTimeout(() => {
-        handleClose();
+        handleClose(true); // true = did save recipe, trigger refresh
       }, 500);
     });
   };
 
-  const handleClose = () => {
+  const handleClose = (didSaveRecipe?: boolean) => {
     resetWizard();
-    onClose();
+    onClose(didSaveRecipe);
   };
 
   const handleFlowSelect = (flow: FlowType) => {
@@ -649,7 +649,7 @@ export function SuggestionWizard({
               {currentStep === STEPS.aiResults && "✨ Your Suggestions"}
             </h2>
           </div>
-          <Button variant="ghost" size="icon" onClick={handleClose}>
+          <Button variant="ghost" size="icon" onClick={() => handleClose()}>
             <X className="w-5 h-5" />
           </Button>
         </div>

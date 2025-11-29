@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, createContext, useContext } from "react";
+import { useState, createContext, useContext, useCallback } from "react";
 import { SuggestionWizard } from "@/components/suggestion-wizard";
 import { BottomNav, SidebarNav, TopNav } from "@/components/navigation";
 
 // Context to share wizard state
 type WizardContextType = {
   openWizard: (flow?: "what-to-cook" | "ingredients-needed") => void;
+  nutritionRefreshKey: number;
+  triggerNutritionRefresh: () => void;
 };
 
 const WizardContext = createContext<WizardContextType | null>(null);
@@ -28,18 +30,23 @@ const BACKGROUND_EMOJIS = ["🍣", "🥗", "🍜", "🍕", "🍔", "🍱", "🍩
 export function DashboardShell({ children }: DashboardShellProps) {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [initialFlow, setInitialFlow] = useState<"what-to-cook" | "ingredients-needed" | undefined>();
+  const [nutritionRefreshKey, setNutritionRefreshKey] = useState(0);
 
   const openWizard = (flow?: "what-to-cook" | "ingredients-needed") => {
     setInitialFlow(flow);
     setIsWizardOpen(true);
   };
 
+  const triggerNutritionRefresh = useCallback(() => {
+    setNutritionRefreshKey(prev => prev + 1);
+  }, []);
+
   const handlePlusClick = () => {
     openWizard();
   };
 
   return (
-    <WizardContext.Provider value={{ openWizard }}>
+    <WizardContext.Provider value={{ openWizard, nutritionRefreshKey, triggerNutritionRefresh }}>
       <div className="relative min-h-screen bg-background overflow-hidden">
         <div
           className="pointer-events-none absolute inset-0 z-0 select-none opacity-90 [mask-image:radial-gradient(circle_at_center,rgba(0,0,0,0.45),transparent)]"
@@ -84,9 +91,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
           {/* Suggestion wizard modal */}
           <SuggestionWizard
             isOpen={isWizardOpen}
-            onClose={() => {
+            onClose={(didSaveRecipe?: boolean) => {
               setIsWizardOpen(false);
               setInitialFlow(undefined);
+              // Trigger nutrition refresh if a recipe was saved
+              if (didSaveRecipe) {
+                triggerNutritionRefresh();
+              }
             }}
             initialFlow={initialFlow}
           />
