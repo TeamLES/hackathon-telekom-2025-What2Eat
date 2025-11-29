@@ -787,8 +787,8 @@ export function SuggestionWizard({
               </div>
 
               <div className="space-y-4">
-                {/* Image Preview & Uploading State */}
-                {capturedImage && (
+                {/* Image Preview & Uploading State - only for use-my-ingredients */}
+                {ingredientSource === "use-my-ingredients" && capturedImage && (
                   <div className="relative group">
                     <img src={capturedImage} alt="Captured ingredients" className="rounded-lg w-full" />
                     {isUploading ? (
@@ -811,8 +811,8 @@ export function SuggestionWizard({
                   </div>
                 )}
 
-                {/* Upload Buttons */}
-                {!capturedImage && (
+                {/* Upload Buttons - only for use-my-ingredients */}
+                {ingredientSource === "use-my-ingredients" && !capturedImage && (
                   <div className="flex gap-2">
                     <Button variant="outline" className="flex-1" onClick={startCamera}>
                       <Camera className="w-4 h-4 mr-2" />
@@ -827,14 +827,16 @@ export function SuggestionWizard({
 
                 {uploadError && <p className="text-sm text-destructive">{uploadError}</p>}
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
+                {ingredientSource === "use-my-ingredients" && (
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">or type</span>
+                    </div>
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">or type</span>
-                  </div>
-                </div>
+                )}
 
                 <Textarea
                   placeholder="e.g. chicken, rice, tomatoes, onion, garlic..."
