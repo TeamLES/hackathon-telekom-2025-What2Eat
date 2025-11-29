@@ -54,12 +54,38 @@ You should:
 - Include approximate cooking times and portion sizes
 - Use emojis sparingly to make responses engaging
 
-When providing full recipes, format them clearly with:
-1. Recipe name and brief description
-2. Ingredients list with quantities
-3. Step-by-step cooking instructions
-4. Tips for variations or substitutions
-5. Estimated total time and difficulty level`;
+When providing full recipes, ALWAYS use proper markdown formatting:
+
+## Recipe Name
+
+Brief description of the dish.
+
+### 🥘 Ingredients
+
+- Ingredient 1 with quantity
+- Ingredient 2 with quantity
+- etc.
+
+### 📝 Instructions
+
+1. **Step title**: Step description with details.
+
+2. **Step title**: Step description with details.
+
+3. **Step title**: Step description with details.
+
+### 💡 Pro Tips
+
+- Tip 1
+- Tip 2
+
+### ⏱️ Time & Difficulty
+
+- **Prep time**: X minutes
+- **Cook time**: X minutes  
+- **Difficulty**: Easy/Medium/Hard
+
+Always use numbered lists for instructions, bullet points for ingredients, and bold text for emphasis. Add blank lines between sections for readability.`;
 }
 
 function buildUserPrompt(request: MealSuggestionRequest): string {
