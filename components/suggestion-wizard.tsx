@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition, useRef } from "react";
+import { useState, useEffect, useTransition, useRef, ChangeEvent } from "react";
 import {
   X,
   ChevronLeft,
@@ -14,6 +14,7 @@ import {
   Clock,
   Check,
   RotateCcw,
+  ImageIcon,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
@@ -82,6 +83,7 @@ export function SuggestionWizard({
   const supabase = createClient();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [flowType, setFlowType] = useState<FlowType>(null);
   const [ingredientSource, setIngredientSource] =
@@ -130,7 +132,7 @@ export function SuggestionWizard({
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiError, setAiError] = useState<Error | null>(null);
   const abortControllerRef = { current: null as AbortController | null };
-  
+
   // Meal suggestions (structured data from AI)
   type MealSuggestion = {
     name: string;
@@ -330,30 +332,30 @@ export function SuggestionWizard({
     }
 
     // Build the meal object to save
-    const mealToSave = selectedSuggestion 
+    const mealToSave = selectedSuggestion
       ? {
-          name: selectedSuggestion.name,
-          description: selectedSuggestion.description,
-          estimatedTime: selectedSuggestion.estimatedTime,
-          difficulty: selectedSuggestion.difficulty,
-        }
+        name: selectedSuggestion.name,
+        description: selectedSuggestion.description,
+        estimatedTime: selectedSuggestion.estimatedTime,
+        difficulty: selectedSuggestion.difficulty,
+      }
       : {
-          // For "ingredients-needed" flow, use the meal name they entered
-          name: mealName || "AI Generated Recipe",
-          description: "",
-          estimatedTime: undefined,
-          difficulty: undefined as "Easy" | "Medium" | "Hard" | undefined,
-        };
+        // For "ingredients-needed" flow, use the meal name they entered
+        name: mealName || "AI Generated Recipe",
+        description: "",
+        estimatedTime: undefined,
+        difficulty: undefined as "Easy" | "Medium" | "Hard" | undefined,
+      };
 
     startSaveTransition(async () => {
       // Pass mealType to save to the correct meal plan slot
       const result = await saveAiRecipeAction(
-        mealToSave, 
+        mealToSave,
         completion,
         mealType, // breakfast, lunch, dinner, or snack
         undefined // planDate - defaults to today
       );
-      
+
       if ("error" in result) {
         console.error("Failed to save recipe:", result.error);
         // Still close even if save fails
@@ -469,7 +471,7 @@ export function SuggestionWizard({
   // Handle when user selects a meal suggestion
   const handleSelectMeal = async (meal: typeof mealSuggestions[0]) => {
     setSelectedSuggestion(meal);
-    
+
     // Build request with the selected meal
     const requestBody = {
       flowType,
@@ -529,14 +531,14 @@ export function SuggestionWizard({
       const response = await fetch("/api/analyze-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           image: imageDataUrl,
           saveToStorage: true, // Save to Supabase storage and database
         }),
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || "Failed to analyze image.");
       }
@@ -586,6 +588,41 @@ export function SuggestionWizard({
     }
   };
 
+  const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please select an image file.');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('Image is too large. Maximum size is 10MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageDataUrl = e.target?.result as string;
+      setCapturedImage(imageDataUrl);
+      handleImageUpload(imageDataUrl);
+    };
+    reader.onerror = () => {
+      setUploadError('Failed to read file. Please try again.');
+    };
+    reader.readAsDataURL(file);
+
+    // Reset input so the same file can be selected again
+    event.target.value = '';
+  };
+
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
   useEffect(() => {
     if (cameraStream && videoRef.current) {
       videoRef.current.srcObject = cameraStream;
@@ -599,6 +636,15 @@ export function SuggestionWizard({
       <div className="fixed inset-0 md:inset-4 md:m-auto md:max-w-2xl md:h-fit md:max-h-[90vh] bg-background md:rounded-xl md:border md:shadow-lg overflow-auto">
         {/* Hidden canvas for capturing photo */}
         <canvas ref={canvasRef} className="hidden" />
+
+        {/* Hidden file input for uploading images */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
 
         {/* Camera Modal */}
         {isCameraOpen && (
@@ -772,8 +818,8 @@ export function SuggestionWizard({
                       <Camera className="w-4 h-4 mr-2" />
                       Take photo
                     </Button>
-                    <Button variant="outline" className="flex-1">
-                      <Upload className="w-4 h-4 mr-2" />
+                    <Button variant="outline" className="flex-1" onClick={triggerFileUpload}>
+                      <ImageIcon className="w-4 h-4 mr-2" />
                       Upload image
                     </Button>
                   </div>
@@ -1110,7 +1156,7 @@ export function SuggestionWizard({
                       Here are some delicious options based on your preferences
                     </p>
                   </div>
-                  
+
                   <div className="grid gap-4">
                     {mealSuggestions.map((meal, index) => (
                       <button
