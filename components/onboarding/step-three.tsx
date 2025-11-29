@@ -100,7 +100,7 @@ export function StepThree() {
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold">Step 3: Final Touches</h2>
+        <h2 className="text-2xl font-bold">Step 4: Final Touches</h2>
         <p className="text-muted-foreground">
           Almost done! These optional settings help us personalize your
           experience even more.

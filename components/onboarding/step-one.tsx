@@ -92,7 +92,7 @@ export function StepOne() {
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold">Step 1: About You</h2>
+        <h2 className="text-2xl font-bold">Step 2: About You</h2>
         <p className="text-muted-foreground">
           Tell us about yourself so we can personalize your experience
         </p>

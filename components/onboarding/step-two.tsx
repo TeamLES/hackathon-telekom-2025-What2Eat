@@ -88,7 +88,7 @@ export function StepTwo() {
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold">Step 2: Food Preferences</h2>
+        <h2 className="text-2xl font-bold">Step 3: Food Preferences</h2>
         <p className="text-muted-foreground">
           Tell us about your food preferences and lifestyle
         </p>

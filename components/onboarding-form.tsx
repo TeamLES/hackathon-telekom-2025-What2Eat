@@ -8,6 +8,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/lib/database.types";
 import { Button } from "@/components/ui/button";
+import { StepProfile } from "./onboarding/step-profile";
 import { StepOne } from "./onboarding/step-one";
 import { StepTwo } from "./onboarding/step-two";
 import { StepThree } from "./onboarding/step-three";
@@ -23,7 +24,11 @@ type FocusPriorityType = Database["public"]["Enums"]["focus_priority_type"];
 
 // Zod schema for form validation
 export const onboardingSchema = z.object({
-  // Step 1: Basic Info + Eating Preferences (Required)
+  // Step 1: Profile Info (Required)
+  full_name: z.string().min(2, "Name must be at least 2 characters"),
+  username: z.string().min(3, "Username must be at least 3 characters").regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"),
+
+  // Step 2: Basic Info + Eating Preferences (Required)
   gender: z.enum(["male", "female", "other", "prefer_not_to_say"]),
   age: z.number().min(1).max(120),
   height_cm: z.number().min(50).max(300),
@@ -48,7 +53,7 @@ export const onboardingSchema = z.object({
   budget_level: z.enum(["low", "medium", "high", "no_preference"]),
   cooking_skill: z.enum(["beginner", "intermediate", "advanced"]),
 
-  // Step 2: Cuisines (Required) + Lifestyle & Dietary Restrictions (Optional)
+  // Step 3: Cuisines (Required) + Lifestyle & Dietary Restrictions (Optional)
   favorite_cuisines: z
     .array(z.number())
     .min(1, "Please select at least one favorite cuisine"),
@@ -58,7 +63,7 @@ export const onboardingSchema = z.object({
   snacks_often: z.boolean().optional(),
   dietary_restrictions: z.array(z.number()).optional(),
 
-  // Step 3: Kitchen Equipment & AI Preferences (Optional)
+  // Step 4: Kitchen Equipment & AI Preferences (Optional)
   kitchen_equipment: z.array(z.number()).optional(),
   ai_tone: z.enum(["friendly", "expert", "minimal"]).optional(),
   focus_priorities: z
@@ -80,7 +85,7 @@ interface OnboardingFormProps {
   userId: string;
 }
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
 
 export function OnboardingForm({ userId }: OnboardingFormProps) {
   const router = useRouter();
@@ -111,6 +116,8 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
     let isValid = false;
 
     if (currentStep === 1) {
+      isValid = await trigger(["full_name", "username"]);
+    } else if (currentStep === 2) {
       isValid = await trigger([
         "gender",
         "age",
@@ -123,7 +130,7 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
         "budget_level",
         "cooking_skill",
       ]);
-    } else if (currentStep === 2) {
+    } else if (currentStep === 3) {
       isValid = await trigger(["favorite_cuisines"]);
     } else {
       isValid = true;
@@ -144,6 +151,17 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
     setError(null);
 
     try {
+      // 0. Update profiles table with full_name and username
+      const { error: profileUpdateError } = await supabase
+        .from("profiles")
+        .update({
+          full_name: data.full_name,
+          username: data.username,
+        })
+        .eq("id", userId);
+
+      if (profileUpdateError) throw profileUpdateError;
+
       // Calculate macros based on body weight
       // Protein: 1.6g per kg, Fat: 1g per kg, Carbs: remaining calories
       const proteinTarget = Math.round(data.weight_kg * 1.6);
@@ -257,10 +275,12 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <StepOne />;
+        return <StepProfile />;
       case 2:
-        return <StepTwo />;
+        return <StepOne />;
       case 3:
+        return <StepTwo />;
+      case 4:
         return <StepThree />;
       default:
         return null;
