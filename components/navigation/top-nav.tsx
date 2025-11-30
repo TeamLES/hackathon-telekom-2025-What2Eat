@@ -9,10 +9,11 @@ import { LogoutButton } from "@/components/logout-button";
 import { cn } from "@/lib/utils";
 
 interface TopNavProps {
-  onPlusClick: () => void;
+  onPlusClick?: () => void;
+  showActions?: boolean;
 }
 
-export function TopNav({ onPlusClick }: TopNavProps) {
+export function TopNav({ onPlusClick, showActions = true }: TopNavProps) {
   const pathname = usePathname();
   const isProfileActive = pathname === "/dashboard/profile";
 
@@ -29,26 +30,30 @@ export function TopNav({ onPlusClick }: TopNavProps) {
         </Link>
 
         <div className="ml-auto flex items-center gap-2 md:gap-4">
-          <Button
-            onClick={onPlusClick}
-            className="hidden md:inline-flex rounded-2xl bg-gradient-to-r from-[hsl(var(--brand-orange))] via-[hsl(var(--brand-red))] to-[hsl(280,70%,50%)] px-4 py-2 text-sm font-semibold text-white shadow-[0_15px_35px_rgba(0,0,0,0.25)] hover:opacity-95"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="hidden lg:inline">New Suggestion</span>
-          </Button>
+          {showActions && onPlusClick && (
+            <Button
+              onClick={onPlusClick}
+              className="hidden md:inline-flex rounded-2xl bg-gradient-to-r from-[hsl(var(--brand-orange))] via-[hsl(var(--brand-red))] to-[hsl(280,70%,50%)] px-4 py-2 text-sm font-semibold text-white shadow-[0_15px_35px_rgba(0,0,0,0.25)] hover:opacity-95"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden lg:inline">New Suggestion</span>
+            </Button>
+          )}
 
           {/* Profile button - mobile only */}
-          <Link
-            href="/dashboard/profile"
-            className={cn(
-              "md:hidden flex items-center justify-center w-10 h-10 rounded-full transition-colors",
-              isProfileActive
-                ? "bg-[hsl(var(--brand-orange))]/20 text-[hsl(var(--brand-orange))]"
-                : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
-            )}
-          >
-            <User className="w-5 h-5" />
-          </Link>
+          {showActions && (
+            <Link
+              href="/dashboard/profile"
+              className={cn(
+                "md:hidden flex items-center justify-center w-10 h-10 rounded-full transition-colors",
+                isProfileActive
+                  ? "bg-[hsl(var(--brand-orange))]/20 text-[hsl(var(--brand-orange))]"
+                  : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}
+            >
+              <User className="w-5 h-5" />
+            </Link>
+          )}
 
           <ThemeSwitcher />
           <LogoutButton />
