@@ -9,8 +9,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "What2Eat – Personalizovaný jedálniček s AI",
-  description: "Inteligentný generátor personalizovaných jedálničkov. Naplánuj si jedlá podľa tvojich cieľov, preferencií a diétnych obmedzení s pomocou AI.",
+  title: "What2Eat",
+  description: "AI-powered meal planning and recipe suggestions tailored to your dietary preferences.",
 };
 
 const geistSans = Geist({
