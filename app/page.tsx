@@ -71,12 +71,15 @@ export default async function Home() {
   return (
     <main className="min-h-screen flex flex-col">
       {/* Navigation */}
-      <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16 sticky top-0 bg-background/80 backdrop-blur-sm z-50">
-        <div className="w-full max-w-6xl flex justify-between items-center p-3 px-5 text-sm">
-          <div className="flex gap-5 items-center font-semibold">
-            <Link href={"/"} className="text-lg">🍽️ What2Eat</Link>
-          </div>
-          <div className="flex items-center gap-4">
+      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-gradient-to-b from-background/95 via-background/90 to-background/75 dark:from-[#141414]/85 dark:via-[#141414]/70 dark:to-[#141414]/55 backdrop-blur supports-[backdrop-filter]:bg-background/65 ring-1 ring-black/5 dark:ring-white/12 shadow-[0_8px_18px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_45px_rgba(0,0,0,0.3)]">
+        <div className="flex h-20 items-center justify-between gap-4 px-4 md:px-8">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-[hsl(var(--brand-orange))] via-[hsl(var(--brand-orange))] to-[hsl(var(--brand-red))] text-white text-2xl shadow-[0_12px_30px_rgba(0,0,0,0.25)]">
+              🍽️
+            </div>
+            <span className="text-xl font-semibold">What2Eat</span>
+          </Link>
+          <div className="flex items-center gap-2">
             <ThemeSwitcher />
             {!hasEnvVars ? (
               <EnvVarWarning />
@@ -87,7 +90,7 @@ export default async function Home() {
             )}
           </div>
         </div>
-      </nav>
+      </header>
 
       {/* Hero Section */}
       <section className="w-full py-20 md:py-32 bg-gradient-to-b from-background to-muted/30">
