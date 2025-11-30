@@ -26,16 +26,16 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (e?: React.FormEvent, demoEmail?: string, demoPassword?: string) => {
+    e?.preventDefault();
     const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: demoEmail || email,
+        password: demoPassword || password,
       });
       if (error) throw error;
       router.push("/dashboard");
@@ -44,6 +44,12 @@ export function LoginForm({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDemoLogin = () => {
+    setEmail("demo@gmail.com");
+    setPassword("demo123");
+    handleLogin(undefined, "demo@gmail.com", "demo123");
   };
 
   return (
@@ -102,6 +108,27 @@ export function LoginForm({
               </Link>
             </div>
           </form>
+
+          {/* Demo account info */}
+          <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950">
+            <p className="mb-2 text-sm font-medium text-amber-800 dark:text-amber-200">
+              💡 Demo account to try the app:
+            </p>
+            <div className="space-y-1 text-sm text-amber-700 dark:text-amber-300">
+              <p><span className="font-medium">Email:</span> demo@gmail.com</p>
+              <p><span className="font-medium">Password:</span> demo123</p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-3 w-full border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-900"
+              onClick={handleDemoLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? "Logging in..." : "Use Demo Account"}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
