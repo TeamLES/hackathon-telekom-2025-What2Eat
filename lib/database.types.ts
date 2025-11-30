@@ -134,20 +134,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fridge_snapshot_items_ingredient_id_fkey"
-            columns: ["ingredient_id"]
-            isOneToOne: false
-            referencedRelation: "ingredients_catalog"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fridge_snapshot_items_matched_pantry_item_id_fkey"
-            columns: ["matched_pantry_item_id"]
-            isOneToOne: false
-            referencedRelation: "pantry_items"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "fridge_snapshot_items_snapshot_id_fkey"
             columns: ["snapshot_id"]
             isOneToOne: false
@@ -225,20 +211,6 @@ export type Database = {
             referencedRelation: "grocery_lists"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "grocery_list_items_ingredient_id_fkey"
-            columns: ["ingredient_id"]
-            isOneToOne: false
-            referencedRelation: "ingredients_catalog"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "grocery_list_items_pantry_item_id_fkey"
-            columns: ["pantry_item_id"]
-            isOneToOne: false
-            referencedRelation: "pantry_items"
-            referencedColumns: ["id"]
-          },
         ]
       }
       grocery_lists: {
@@ -281,30 +253,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      ingredients_catalog: {
-        Row: {
-          category: string | null
-          created_at: string | null
-          default_unit: string | null
-          id: number
-          name: string
-        }
-        Insert: {
-          category?: string | null
-          created_at?: string | null
-          default_unit?: string | null
-          id?: number
-          name: string
-        }
-        Update: {
-          category?: string | null
-          created_at?: string | null
-          default_unit?: string | null
-          id?: number
-          name?: string
-        }
-        Relationships: []
       }
       kitchen_equipment: {
         Row: {
@@ -531,53 +479,6 @@ export type Database = {
         }
         Relationships: []
       }
-      pantry_items: {
-        Row: {
-          created_at: string | null
-          expires_at: string | null
-          id: number
-          ingredient_id: number | null
-          name: string
-          quantity: number | null
-          unit: string | null
-          updated_at: string | null
-          user_id: string
-          usually_have: boolean | null
-        }
-        Insert: {
-          created_at?: string | null
-          expires_at?: string | null
-          id?: number
-          ingredient_id?: number | null
-          name: string
-          quantity?: number | null
-          unit?: string | null
-          updated_at?: string | null
-          user_id: string
-          usually_have?: boolean | null
-        }
-        Update: {
-          created_at?: string | null
-          expires_at?: string | null
-          id?: number
-          ingredient_id?: number | null
-          name?: string
-          quantity?: number | null
-          unit?: string | null
-          updated_at?: string | null
-          user_id?: string
-          usually_have?: boolean | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pantry_items_ingredient_id_fkey"
-            columns: ["ingredient_id"]
-            isOneToOne: false
-            referencedRelation: "ingredients_catalog"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -631,20 +532,6 @@ export type Database = {
           unit?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "recipe_ingredients_ingredient_id_fkey"
-            columns: ["ingredient_id"]
-            isOneToOne: false
-            referencedRelation: "ingredients_catalog"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "recipe_ingredients_pantry_item_id_fkey"
-            columns: ["pantry_item_id"]
-            isOneToOne: false
-            referencedRelation: "pantry_items"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "recipe_ingredients_recipe_id_fkey"
             columns: ["recipe_id"]
