@@ -122,7 +122,6 @@ export function SuggestionWizard({
 
   // Form data
   const [ingredients, setIngredients] = useState("");
-  const [additionalPreferences, setAdditionalPreferences] = useState("");
   const [cookingTime, setCookingTime] = useState(30);
   const [mealType, setMealType] = useState<
     "snack" | "breakfast" | "lunch" | "dinner"
@@ -491,7 +490,6 @@ export function SuggestionWizard({
     setIngredientSource(null);
     setCurrentStep(STEPS.initial);
     setIngredients("");
-    setAdditionalPreferences("");
     setCookingTime(30);
     setMealType("lunch");
     setExtraInfo("");
@@ -711,7 +709,6 @@ export function SuggestionWizard({
           .filter(Boolean) as string[],
         spicyLevel,
         quickPreferences,
-        additionalPreferences,
         // Details
         cookingTime,
         mealType,
@@ -1263,17 +1260,6 @@ export function SuggestionWizard({
                         </button>
                       ))}
                     </div>
-                  </div>
-
-                  {/* Additional Preferences */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium">Any additional preferences?</Label>
-                    <Textarea
-                      placeholder="e.g. I want something spicy, no raw fish, prefer grilled..."
-                      value={additionalPreferences}
-                      onChange={(e) => setAdditionalPreferences(e.target.value)}
-                      rows={2}
-                    />
                   </div>
                 </>
               )}

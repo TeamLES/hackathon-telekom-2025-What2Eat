@@ -12,7 +12,6 @@ export interface MealSuggestionRequest {
   selectedEquipment: string[];
   spicyLevel: string;
   quickPreferences: string[];
-  additionalPreferences?: string;
   // Details
   cookingTime?: number;
   mealType?: "snack" | "breakfast" | "lunch" | "dinner";
@@ -206,11 +205,6 @@ function buildUserPrompt(request: MealSuggestionRequest): string {
     );
   }
 
-  // Additional preferences
-  if (request.additionalPreferences) {
-    parts.push(`\nAdditional preferences: ${request.additionalPreferences}`);
-  }
-
   // Extra info
   if (request.extraInfo) {
     parts.push(`\nExtra notes: ${request.extraInfo}`);
@@ -379,7 +373,6 @@ export async function POST(req: Request) {
       selectedEquipment: json.selectedEquipment || [],
       spicyLevel: json.spicyLevel,
       quickPreferences: json.quickPreferences || [],
-      additionalPreferences: json.additionalPreferences,
       cookingTime: json.cookingTime,
       mealType: json.mealType,
       extraInfo: json.extraInfo,
