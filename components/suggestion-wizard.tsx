@@ -99,7 +99,26 @@ export function SuggestionWizard({
   const [kitchenEquipment, setKitchenEquipment] = useState<KitchenEquipment[]>(
     []
   );
+  const [flavorProfiles, setFlavorProfiles] = useState<{ id: number; label: string }[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+
+  // User profile data for AI personalization
+  type UserProfileData = {
+    cookingSkill?: string | null;
+    calorieTarget?: number | null;
+    proteinTarget?: number | null;
+    carbsTarget?: number | null;
+    fatTarget?: number | null;
+    primaryGoal?: string | null;
+    budgetLevel?: string | null;
+    foodDislikes?: string[];
+    otherAllergyNotes?: string | null;
+    flavorPreferences?: string[];
+    savedDietaryRestrictions?: number[];
+    savedKitchenEquipment?: number[];
+    savedFavoriteCuisines?: number[];
+  };
+  const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
 
   // Form data
   const [ingredients, setIngredients] = useState("");
@@ -380,15 +399,70 @@ export function SuggestionWizard({
 
       setIsLoadingData(true);
       try {
-        const [cuisinesRes, restrictionsRes, equipmentRes] = await Promise.all([
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+
+        // Load reference data first
+        const [cuisinesRes, restrictionsRes, equipmentRes, flavorProfilesRes] = await Promise.all([
           supabase.from("cuisines").select("*").order("name"),
           supabase.from("dietary_restrictions").select("*").order("label"),
           supabase.from("kitchen_equipment").select("*").order("label"),
+          supabase.from("flavor_profiles").select("id, label").order("label"),
         ]);
 
         if (cuisinesRes.data) setCuisines(cuisinesRes.data);
         if (restrictionsRes.data) setDietaryRestrictions(restrictionsRes.data);
         if (equipmentRes.data) setKitchenEquipment(equipmentRes.data);
+        if (flavorProfilesRes.data) setFlavorProfiles(flavorProfilesRes.data);
+
+        // Load user profile data if user is logged in
+        if (user) {
+          const [nutritionRes, userRestrictionsRes, userEquipmentRes, userCuisinesRes, userDislikesRes, userFlavorRes] = await Promise.all([
+            supabase.from("nutrition_profiles").select("cooking_skill, calorie_target, protein_target_g, carbs_target_g, fat_target_g, primary_goal, budget_level, other_allergy_notes").eq("user_id", user.id).single(),
+            supabase.from("user_dietary_restrictions").select("restriction_id").eq("user_id", user.id),
+            supabase.from("user_kitchen_equipment").select("equipment_id").eq("user_id", user.id),
+            supabase.from("user_favorite_cuisines").select("cuisine_id").eq("user_id", user.id),
+            supabase.from("user_food_dislikes").select("food_name").eq("user_id", user.id),
+            supabase.from("user_flavor_preferences").select("flavor_id").eq("user_id", user.id),
+          ]);
+
+          const savedRestrictionIds = userRestrictionsRes.data?.map((r: { restriction_id: number }) => r.restriction_id) || [];
+          const savedEquipmentIds = userEquipmentRes.data?.map((e: { equipment_id: number }) => e.equipment_id) || [];
+          const savedCuisineIds = userCuisinesRes.data?.map((c: { cuisine_id: number }) => c.cuisine_id) || [];
+          const savedFlavorIds = userFlavorRes.data?.map((f: { flavor_id: number }) => f.flavor_id) || [];
+
+          // Auto-populate selections from user profile
+          if (savedRestrictionIds.length > 0) {
+            setSelectedRestrictions(savedRestrictionIds);
+          }
+          if (savedEquipmentIds.length > 0) {
+            setSelectedEquipment(savedEquipmentIds);
+          }
+          if (savedCuisineIds.length > 0) {
+            setSelectedCuisines(savedCuisineIds);
+          }
+
+          // Resolve flavor names from IDs
+          const flavorNames = savedFlavorIds
+            .map((id: number) => flavorProfilesRes.data?.find((f: { id: number; label: string }) => f.id === id)?.label)
+            .filter(Boolean) as string[];
+
+          setUserProfile({
+            cookingSkill: nutritionRes.data?.cooking_skill || null,
+            calorieTarget: nutritionRes.data?.calorie_target || null,
+            proteinTarget: nutritionRes.data?.protein_target_g || null,
+            carbsTarget: nutritionRes.data?.carbs_target_g || null,
+            fatTarget: nutritionRes.data?.fat_target_g || null,
+            primaryGoal: nutritionRes.data?.primary_goal || null,
+            budgetLevel: nutritionRes.data?.budget_level || null,
+            foodDislikes: userDislikesRes.data?.map((d: { food_name: string }) => d.food_name) || [],
+            otherAllergyNotes: nutritionRes.data?.other_allergy_notes || null,
+            flavorPreferences: flavorNames,
+            savedDietaryRestrictions: savedRestrictionIds,
+            savedKitchenEquipment: savedEquipmentIds,
+            savedFavoriteCuisines: savedCuisineIds,
+          });
+        }
       } catch (err) {
         console.error("Error loading data:", err);
       } finally {
@@ -644,6 +718,19 @@ export function SuggestionWizard({
         extraInfo,
         portions,
         mealName,
+        // User profile for AI personalization
+        userProfile: userProfile ? {
+          cookingSkill: userProfile.cookingSkill,
+          calorieTarget: userProfile.calorieTarget,
+          proteinTarget: userProfile.proteinTarget,
+          carbsTarget: userProfile.carbsTarget,
+          fatTarget: userProfile.fatTarget,
+          primaryGoal: userProfile.primaryGoal,
+          budgetLevel: userProfile.budgetLevel,
+          foodDislikes: userProfile.foodDislikes,
+          otherAllergyNotes: userProfile.otherAllergyNotes,
+          flavorPreferences: userProfile.flavorPreferences,
+        } : undefined,
       };
       // Get structured suggestions first, excluding previously shown meals
       await fetchMealSuggestions(requestBody, previouslyShownMeals);
@@ -679,6 +766,12 @@ export function SuggestionWizard({
             .map((id) => kitchenEquipment.find((e) => e.id === id)?.label)
             .filter(Boolean) as string[],
           spicyLevel,
+          // User profile for AI personalization
+          userProfile: userProfile ? {
+            cookingSkill: userProfile.cookingSkill,
+            foodDislikes: userProfile.foodDislikes,
+            otherAllergyNotes: userProfile.otherAllergyNotes,
+          } : undefined,
         }),
       });
 

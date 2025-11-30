@@ -27,6 +27,19 @@ export interface MealSuggestionRequest {
   };
   // For getting different suggestions
   excludeMeals?: string[];
+  // User profile data for personalization
+  userProfile?: {
+    cookingSkill?: string | null;
+    calorieTarget?: number | null;
+    proteinTarget?: number | null;
+    carbsTarget?: number | null;
+    fatTarget?: number | null;
+    primaryGoal?: string | null;
+    budgetLevel?: string | null;
+    foodDislikes?: string[];
+    otherAllergyNotes?: string | null;
+    flavorPreferences?: string[];
+  };
 }
 
 // Schema for meal suggestions
@@ -203,6 +216,65 @@ function buildUserPrompt(request: MealSuggestionRequest): string {
     parts.push(`\nExtra notes: ${request.extraInfo}`);
   }
 
+  // User profile data for personalization
+  if (request.userProfile) {
+    const profile = request.userProfile;
+
+    // Cooking skill level - affects recipe complexity
+    if (profile.cookingSkill) {
+      const skillDescriptions: Record<string, string> = {
+        beginner: "I'm a beginner cook, so please keep recipes simple with basic techniques",
+        intermediate: "I have intermediate cooking skills and can handle moderately complex recipes",
+        advanced: "I'm an experienced cook and enjoy challenging recipes with advanced techniques",
+      };
+      parts.push(`\n${skillDescriptions[profile.cookingSkill] || `My cooking skill level is: ${profile.cookingSkill}`}.`);
+    }
+
+    // Budget level
+    if (profile.budgetLevel) {
+      const budgetDescriptions: Record<string, string> = {
+        budget: "I'm on a tight budget, so please suggest affordable ingredients",
+        moderate: "I have a moderate budget for ingredients",
+        premium: "Budget is not a concern, feel free to suggest premium ingredients",
+      };
+      parts.push(`\n${budgetDescriptions[profile.budgetLevel] || ""}`);
+    }
+
+    // Primary goal - affects nutrition focus
+    if (profile.primaryGoal) {
+      const goalDescriptions: Record<string, string> = {
+        lose_weight: "My goal is weight loss, so please prioritize lower-calorie, high-protein options",
+        gain_muscle: "My goal is muscle gain, so please prioritize high-protein meals",
+        maintain: "I'm maintaining my current weight",
+        eat_healthier: "I want to eat healthier overall",
+        save_time: "I want to save time on cooking",
+        save_money: "I want to save money on food",
+        explore_cuisines: "I want to explore new cuisines and flavors",
+      };
+      parts.push(`\n${goalDescriptions[profile.primaryGoal] || ""}`);
+    }
+
+    // Calorie and macro targets
+    if (profile.calorieTarget) {
+      parts.push(`\nMy daily calorie target is around ${profile.calorieTarget} kcal. Please suggest meals that fit within reasonable portion of this.`);
+    }
+
+    // Food dislikes - IMPORTANT to avoid
+    if (profile.foodDislikes && profile.foodDislikes.length > 0) {
+      parts.push(`\n⚠️ IMPORTANT - Foods I dislike (please avoid): ${profile.foodDislikes.join(", ")}.`);
+    }
+
+    // Other allergy notes - CRITICAL for safety
+    if (profile.otherAllergyNotes) {
+      parts.push(`\n⚠️ CRITICAL - Additional allergy/dietary notes: ${profile.otherAllergyNotes}`);
+    }
+
+    // Flavor preferences
+    if (profile.flavorPreferences && profile.flavorPreferences.length > 0) {
+      parts.push(`\nFlavor preferences: I enjoy ${profile.flavorPreferences.join(", ")} flavors.`);
+    }
+  }
+
   return parts.join("");
 }
 
@@ -260,6 +332,28 @@ function buildFullRecipePrompt(request: MealSuggestionRequest): string {
     parts.push(`\nPlease prioritize using these available ingredients: ${request.ingredients}`);
   }
 
+  // User profile data for personalization
+  if (request.userProfile) {
+    const profile = request.userProfile;
+
+    if (profile.cookingSkill) {
+      const skillDescriptions: Record<string, string> = {
+        beginner: "Keep the recipe simple with basic techniques (beginner cook)",
+        intermediate: "Moderate complexity is fine (intermediate cook)",
+        advanced: "Feel free to use advanced techniques (experienced cook)",
+      };
+      parts.push(`\n${skillDescriptions[profile.cookingSkill] || ""}`);
+    }
+
+    if (profile.foodDislikes && profile.foodDislikes.length > 0) {
+      parts.push(`\n⚠️ IMPORTANT - Foods to avoid (user dislikes): ${profile.foodDislikes.join(", ")}.`);
+    }
+
+    if (profile.otherAllergyNotes) {
+      parts.push(`\n⚠️ CRITICAL - Additional allergy notes: ${profile.otherAllergyNotes}`);
+    }
+  }
+
   parts.push(`\n\nProvide the complete recipe with:
 1. A brief introduction
 2. Full ingredients list with exact quantities
@@ -294,6 +388,7 @@ export async function POST(req: Request) {
       mode: json.mode || "suggestions",
       selectedMeal: json.selectedMeal,
       excludeMeals: json.excludeMeals || [],
+      userProfile: json.userProfile || undefined,
     };
 
     console.log("[meal-suggestions] Mode:", body.mode);
