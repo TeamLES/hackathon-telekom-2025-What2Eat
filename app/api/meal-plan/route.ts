@@ -40,6 +40,8 @@ interface MealPlanRequest {
   cookingSkill?: string;
   calorieTarget?: number;
   proteinTarget?: number;
+  carbsTarget?: number;
+  fatTarget?: number;
   primaryGoal?: string;
   budgetLevel?: string;
   maxCookingTime?: number;
@@ -86,6 +88,14 @@ Requirements:
 
   if (request.proteinTarget) {
     prompt += `\nDaily protein target: approximately ${request.proteinTarget}g`;
+  }
+
+  if (request.carbsTarget) {
+    prompt += `\nDaily carbohydrates target: approximately ${request.carbsTarget}g`;
+  }
+
+  if (request.fatTarget) {
+    prompt += `\nDaily fat target: approximately ${request.fatTarget}g`;
   }
 
   if (request.primaryGoal) {

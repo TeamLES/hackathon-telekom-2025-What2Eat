@@ -13,7 +13,7 @@ async function getUserProfile() {
   // Fetch nutrition profile
   const { data: profile } = await supabase
     .from("nutrition_profiles")
-    .select("meals_per_day, cooking_skill, calorie_target, protein_target, primary_goal, budget_level")
+    .select("meals_per_day, cooking_skill, calorie_target, protein_target_g, carbs_target_g, fat_target_g, primary_goal, budget_level")
     .eq("user_id", authData.user.id)
     .single();
 
@@ -45,7 +45,9 @@ async function getUserProfile() {
     mealsPerDay: profile?.meals_per_day || 3,
     cookingSkill: profile?.cooking_skill || null,
     calorieTarget: profile?.calorie_target || null,
-    proteinTarget: profile?.protein_target || null,
+    proteinTarget: profile?.protein_target_g || null,
+    carbsTarget: profile?.carbs_target_g || null,
+    fatTarget: profile?.fat_target_g || null,
     primaryGoal: profile?.primary_goal || null,
     budgetLevel: profile?.budget_level || null,
     cuisines: cuisines?.map((c) => (c.cuisines as unknown as { code: string })?.code).filter(Boolean) || [],

@@ -56,6 +56,8 @@ interface MealPlannerProps {
     cookingSkill?: string | null;
     calorieTarget?: number | null;
     proteinTarget?: number | null;
+    carbsTarget?: number | null;
+    fatTarget?: number | null;
     primaryGoal?: string | null;
     budgetLevel?: string | null;
     cuisines?: string[];
@@ -133,6 +135,8 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
   const [primaryGoal, setPrimaryGoal] = useState(userProfile.primaryGoal || "maintain");
   const [calorieTarget, setCalorieTarget] = useState(userProfile.calorieTarget || 2000);
   const [proteinTarget, setProteinTarget] = useState(userProfile.proteinTarget || 100);
+  const [carbsTarget, setCarbsTarget] = useState(userProfile.carbsTarget || 250);
+  const [fatTarget, setFatTarget] = useState(userProfile.fatTarget || 65);
   const [maxCookingTime, setMaxCookingTime] = useState(45);
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>(userProfile.cuisines || []);
   const [selectedRestrictions, setSelectedRestrictions] = useState<string[]>(userProfile.restrictions || []);
@@ -182,6 +186,8 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
           cookingSkill,
           calorieTarget,
           proteinTarget,
+          carbsTarget,
+          fatTarget,
           primaryGoal,
           budgetLevel,
           maxCookingTime,
@@ -486,11 +492,11 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
               {showAdvanced && (
                 <div className="space-y-4 pt-4 border-t">
                   {/* Nutrition Targets */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div className="space-y-2">
                       <Label className="text-sm font-medium flex items-center gap-2">
                         <Flame className="w-4 h-4 text-orange-500" />
-                        Daily calories
+                        Calories
                       </Label>
                       <div className="flex items-center gap-2">
                         <Input
@@ -499,15 +505,15 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
                           max={5000}
                           value={calorieTarget}
                           onChange={(e) => setCalorieTarget(parseInt(e.target.value) || 2000)}
-                          className="w-24"
+                          className="w-full"
                         />
-                        <span className="text-sm text-muted-foreground">kcal</span>
+                        <span className="text-xs text-muted-foreground">kcal</span>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label className="text-sm font-medium flex items-center gap-2">
                         <Dumbbell className="w-4 h-4 text-blue-500" />
-                        Daily protein
+                        Protein
                       </Label>
                       <div className="flex items-center gap-2">
                         <Input
@@ -516,9 +522,43 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
                           max={300}
                           value={proteinTarget}
                           onChange={(e) => setProteinTarget(parseInt(e.target.value) || 100)}
-                          className="w-24"
+                          className="w-full"
                         />
-                        <span className="text-sm text-muted-foreground">g</span>
+                        <span className="text-xs text-muted-foreground">g</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium flex items-center gap-2">
+                        <span className="text-amber-500">🍞</span>
+                        Carbs
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min={50}
+                          max={500}
+                          value={carbsTarget}
+                          onChange={(e) => setCarbsTarget(parseInt(e.target.value) || 250)}
+                          className="w-full"
+                        />
+                        <span className="text-xs text-muted-foreground">g</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium flex items-center gap-2">
+                        <span className="text-green-500">🥑</span>
+                        Fat
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min={20}
+                          max={200}
+                          value={fatTarget}
+                          onChange={(e) => setFatTarget(parseInt(e.target.value) || 65)}
+                          className="w-full"
+                        />
+                        <span className="text-xs text-muted-foreground">g</span>
                       </div>
                     </div>
                   </div>
