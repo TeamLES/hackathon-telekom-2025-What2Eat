@@ -213,7 +213,7 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
         <h2 className="text-lg font-semibold mb-4">What do you need?</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card
-            className="cursor-pointer hover:border-primary transition-colors"
+            className="cursor-pointer hover:border-[hsl(var(--brand-orange))] transition-all duration-300 transform hover:scale-[101%]"
             onClick={() => openWizard("what-to-cook")}
           >
             <CardHeader>
@@ -227,7 +227,7 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
             </CardHeader>
           </Card>
           <Card
-            className="cursor-pointer hover:border-primary transition-colors"
+            className="cursor-pointer hover:border-[hsl(var(--brand-orange))] transition-all duration-300 transform hover:scale-[101%]"
             onClick={() => openWizard("ingredients-needed")}
           >
             <CardHeader>
