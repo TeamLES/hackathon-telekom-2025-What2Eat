@@ -21,8 +21,8 @@ type Props = {
   editForm: ProfileData;
   isEditing: boolean;
   lookupData: LookupData;
-  updateField: <K extends keyof ProfileData>(key: K, value: ProfileData[K]) => void;
-  toggleArrayField: (
+  updateFieldAction: <K extends keyof ProfileData>(key: K, value: ProfileData[K]) => void;
+  toggleArrayFieldAction: (
     key: "favorite_cuisines" | "dietary_restrictions" | "kitchen_equipment" | "preferred_meal_types" | "flavor_preferences",
     id: number
   ) => void;
@@ -33,20 +33,20 @@ export function DietTab({
   editForm,
   isEditing,
   lookupData,
-  updateField,
-  toggleArrayField,
+  updateFieldAction,
+  toggleArrayFieldAction,
 }: Props) {
   const [newDislike, setNewDislike] = useState("");
 
   const addFoodDislike = () => {
     if (newDislike.trim() && !editForm.food_dislikes.includes(newDislike.trim())) {
-      updateField("food_dislikes", [...editForm.food_dislikes, newDislike.trim()]);
+      updateFieldAction("food_dislikes", [...editForm.food_dislikes, newDislike.trim()]);
       setNewDislike("");
     }
   };
 
   const removeFoodDislike = (food: string) => {
-    updateField(
+    updateFieldAction(
       "food_dislikes",
       editForm.food_dislikes.filter((f) => f !== food)
     );
@@ -74,7 +74,7 @@ export function DietTab({
                   <Checkbox
                     checked={editForm.favorite_cuisines.includes(cuisine.id)}
                     onCheckedChange={() =>
-                      toggleArrayField("favorite_cuisines", cuisine.id)
+                      toggleArrayFieldAction("favorite_cuisines", cuisine.id)
                     }
                   />
                   <span className="text-sm font-medium">{cuisine.name}</span>
@@ -123,7 +123,7 @@ export function DietTab({
                   <Checkbox
                     checked={editForm.preferred_meal_types.includes(mealType.id)}
                     onCheckedChange={() =>
-                      toggleArrayField("preferred_meal_types", mealType.id)
+                      toggleArrayFieldAction("preferred_meal_types", mealType.id)
                     }
                   />
                   <span className="text-sm font-medium">{mealType.label}</span>
@@ -172,7 +172,7 @@ export function DietTab({
                   <Checkbox
                     checked={editForm.flavor_preferences.includes(flavor.id)}
                     onCheckedChange={() =>
-                      toggleArrayField("flavor_preferences", flavor.id)
+                      toggleArrayFieldAction("flavor_preferences", flavor.id)
                     }
                   />
                   <span className="text-sm font-medium">
@@ -234,7 +234,7 @@ export function DietTab({
                         restriction.id
                       )}
                       onCheckedChange={() =>
-                        toggleArrayField("dietary_restrictions", restriction.id)
+                        toggleArrayFieldAction("dietary_restrictions", restriction.id)
                       }
                     />
                     <span className="text-sm">{restriction.label}</span>
@@ -248,7 +248,7 @@ export function DietTab({
                   placeholder="List any other allergies or food sensitivities not covered above..."
                   value={editForm.other_allergy_notes ?? ""}
                   onChange={(e) =>
-                    updateField("other_allergy_notes", e.target.value || null)
+                    updateFieldAction("other_allergy_notes", e.target.value || null)
                   }
                   rows={3}
                 />

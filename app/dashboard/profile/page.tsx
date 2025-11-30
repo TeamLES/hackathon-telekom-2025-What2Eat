@@ -407,14 +407,14 @@ export default function ProfilePage() {
     setError(null);
   }
 
-  function updateField<K extends keyof ProfileData>(
+  function updateFieldAction<K extends keyof ProfileData>(
     key: K,
     value: ProfileData[K]
   ) {
     setEditForm((prev: ProfileData | null) => (prev ? { ...prev, [key]: value } : null));
   }
 
-  function toggleArrayField(
+  function toggleArrayFieldAction(
     key:
       | "favorite_cuisines"
       | "dietary_restrictions"
@@ -428,16 +428,16 @@ export default function ProfilePage() {
     const updated = current.includes(id)
       ? current.filter((item: number) => item !== id)
       : [...current, id];
-    updateField(key, updated);
+    updateFieldAction(key, updated);
   }
 
-  function togglePriority(priority: string) {
+  function togglePriorityAction(priority: string) {
     if (!editForm) return;
     const current = editForm.focus_priorities;
     const updated = current.includes(priority)
       ? current.filter((p: string) => p !== priority)
       : [...current, priority];
-    updateField("focus_priorities", updated);
+    updateFieldAction("focus_priorities", updated);
   }
 
   if (isLoading) {
@@ -504,7 +504,7 @@ export default function ProfilePage() {
             profile={profile}
             editForm={editForm}
             isEditing={isEditing}
-            updateField={updateField}
+            updateFieldAction={updateFieldAction}
           />
         </TabsContent>
 
@@ -514,8 +514,8 @@ export default function ProfilePage() {
             editForm={editForm}
             isEditing={isEditing}
             lookupData={lookupData}
-            updateField={updateField}
-            toggleArrayField={toggleArrayField}
+            updateFieldAction={updateFieldAction}
+            toggleArrayFieldAction={toggleArrayFieldAction}
           />
         </TabsContent>
 
@@ -525,8 +525,8 @@ export default function ProfilePage() {
             editForm={editForm}
             isEditing={isEditing}
             lookupData={lookupData}
-            updateField={updateField}
-            toggleArrayField={toggleArrayField}
+            updateFieldAction={updateFieldAction}
+            toggleArrayFieldAction={toggleArrayFieldAction}
           />
         </TabsContent>
 
@@ -535,8 +535,8 @@ export default function ProfilePage() {
             profile={profile}
             editForm={editForm}
             isEditing={isEditing}
-            updateField={updateField}
-            togglePriority={togglePriority}
+            updateFieldAction={updateFieldAction}
+            togglePriorityAction={togglePriorityAction}
           />
         </TabsContent>
       </Tabs>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Calculator } from "lucide-react";
 import {
   Card,
@@ -21,7 +20,6 @@ import {
 } from "@/components/ui/select";
 import {
   ProfileData,
-  LookupData,
   GENDER_OPTIONS,
   ACTIVITY_LEVEL_OPTIONS,
   GOAL_OPTIONS,
@@ -32,10 +30,10 @@ type Props = {
   profile: ProfileData;
   editForm: ProfileData;
   isEditing: boolean;
-  updateField: <K extends keyof ProfileData>(key: K, value: ProfileData[K]) => void;
+  updateFieldAction: <K extends keyof ProfileData>(key: K, value: ProfileData[K]) => void;
 };
 
-export function AccountTab({ profile, editForm, isEditing, updateField }: Props) {
+export function AccountTab({ profile, editForm, isEditing, updateFieldAction }: Props) {
   return (
     <div className="space-y-6">
       {/* Account Info */}
@@ -63,7 +61,7 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                   id="full_name"
                   placeholder="John Doe"
                   value={editForm.full_name ?? ""}
-                  onChange={(e) => updateField("full_name", e.target.value)}
+                  onChange={(e) => updateFieldAction("full_name", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -72,7 +70,7 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                   id="username"
                   placeholder="johndoe"
                   value={editForm.username ?? ""}
-                  onChange={(e) => updateField("username", e.target.value)}
+                  onChange={(e) => updateFieldAction("username", e.target.value)}
                 />
               </div>
             </div>
@@ -108,7 +106,7 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                 <Label>Gender</Label>
                 <Select
                   value={editForm.gender ?? ""}
-                  onValueChange={(v) => updateField("gender", v)}
+                  onValueChange={(v) => updateFieldAction("gender", v)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select gender" />
@@ -131,7 +129,7 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                   placeholder="25"
                   value={editForm.age ?? ""}
                   onChange={(e) =>
-                    updateField("age", e.target.value ? Number(e.target.value) : null)
+                    updateFieldAction("age", e.target.value ? Number(e.target.value) : null)
                   }
                 />
               </div>
@@ -144,7 +142,7 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                   placeholder="175"
                   value={editForm.height_cm ?? ""}
                   onChange={(e) =>
-                    updateField(
+                    updateFieldAction(
                       "height_cm",
                       e.target.value ? Number(e.target.value) : null
                     )
@@ -160,7 +158,7 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                   placeholder="70"
                   value={editForm.weight_kg ?? ""}
                   onChange={(e) =>
-                    updateField(
+                    updateFieldAction(
                       "weight_kg",
                       e.target.value ? Number(e.target.value) : null
                     )
@@ -172,7 +170,7 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                 <Label>Activity Level</Label>
                 <Select
                   value={editForm.activity_level ?? ""}
-                  onValueChange={(v) => updateField("activity_level", v)}
+                  onValueChange={(v) => updateFieldAction("activity_level", v)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select activity level" />
@@ -191,7 +189,7 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                 <Label>Primary Goal</Label>
                 <Select
                   value={editForm.primary_goal ?? ""}
-                  onValueChange={(v) => updateField("primary_goal", v)}
+                  onValueChange={(v) => updateFieldAction("primary_goal", v)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select goal" />
@@ -324,14 +322,14 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                 const carbsCals = tdee - proteinCals - fatCals;
                 const carbsG = Math.round(carbsCals / 4);
 
-                updateField("calorie_target", tdee);
-                updateField("protein_target_g", proteinG);
-                updateField("carbs_target_g", carbsG);
-                updateField("fat_target_g", fatG);
-                updateField("is_calorie_target_manual", false);
-                updateField("is_protein_target_manual", false);
-                updateField("is_carbs_target_manual", false);
-                updateField("is_fat_target_manual", false);
+                updateFieldAction("calorie_target", tdee);
+                updateFieldAction("protein_target_g", proteinG);
+                updateFieldAction("carbs_target_g", carbsG);
+                updateFieldAction("fat_target_g", fatG);
+                updateFieldAction("is_calorie_target_manual", false);
+                updateFieldAction("is_protein_target_manual", false);
+                updateFieldAction("is_carbs_target_manual", false);
+                updateFieldAction("is_fat_target_manual", false);
               }}
               className="gap-2"
             >
@@ -352,11 +350,11 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                     type="number"
                     value={editForm.calorie_target ?? ""}
                     onChange={(e) => {
-                      updateField(
+                      updateFieldAction(
                         "calorie_target",
                         e.target.value ? Number(e.target.value) : null
                       );
-                      updateField("is_calorie_target_manual", true);
+                      updateFieldAction("is_calorie_target_manual", true);
                     }}
                   />
                 </div>
@@ -369,11 +367,11 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                     placeholder="120"
                     value={editForm.protein_target_g ?? ""}
                     onChange={(e) => {
-                      updateField(
+                      updateFieldAction(
                         "protein_target_g",
                         e.target.value ? Number(e.target.value) : null
                       );
-                      updateField("is_protein_target_manual", true);
+                      updateFieldAction("is_protein_target_manual", true);
                     }}
                   />
                 </div>
@@ -386,11 +384,11 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                     placeholder="250"
                     value={editForm.carbs_target_g ?? ""}
                     onChange={(e) => {
-                      updateField(
+                      updateFieldAction(
                         "carbs_target_g",
                         e.target.value ? Number(e.target.value) : null
                       );
-                      updateField("is_carbs_target_manual", true);
+                      updateFieldAction("is_carbs_target_manual", true);
                     }}
                   />
                 </div>
@@ -403,11 +401,11 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                     placeholder="65"
                     value={editForm.fat_target_g ?? ""}
                     onChange={(e) => {
-                      updateField(
+                      updateFieldAction(
                         "fat_target_g",
                         e.target.value ? Number(e.target.value) : null
                       );
-                      updateField("is_fat_target_manual", true);
+                      updateFieldAction("is_fat_target_manual", true);
                     }}
                   />
                 </div>
@@ -424,7 +422,7 @@ export function AccountTab({ profile, editForm, isEditing, updateField }: Props)
                   className="w-32"
                   value={editForm.meals_per_day ?? ""}
                   onChange={(e) =>
-                    updateField(
+                    updateFieldAction(
                       "meals_per_day",
                       e.target.value ? Number(e.target.value) : null
                     )

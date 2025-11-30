@@ -29,16 +29,16 @@ type Props = {
   profile: ProfileData;
   editForm: ProfileData;
   isEditing: boolean;
-  updateField: <K extends keyof ProfileData>(key: K, value: ProfileData[K]) => void;
-  togglePriority: (priority: string) => void;
+  updateFieldAction: <K extends keyof ProfileData>(key: K, value: ProfileData[K]) => void;
+  togglePriorityAction: (priority: string) => void;
 };
 
 export function SettingsTab({
   profile,
   editForm,
   isEditing,
-  updateField,
-  togglePriority,
+  updateFieldAction,
+  togglePriorityAction,
 }: Props) {
   return (
     <div className="space-y-6">
@@ -63,7 +63,7 @@ export function SettingsTab({
                           ? "bg-violet-50 border-violet-300 dark:bg-violet-950/30 dark:border-violet-700"
                           : "hover:bg-muted border-border"
                         }`}
-                      onClick={() => updateField("ai_tone", opt.value)}
+                      onClick={() => updateFieldAction("ai_tone", opt.value)}
                     >
                       <span className="font-medium">
                         {opt.value === "friendly" && "😊 "}
@@ -97,7 +97,7 @@ export function SettingsTab({
                     >
                       <Checkbox
                         checked={editForm.focus_priorities.includes(option.value)}
-                        onCheckedChange={() => togglePriority(option.value)}
+                        onCheckedChange={() => togglePriorityAction(option.value)}
                       />
                       <span className="text-sm font-medium">
                         {option.value === "health" && "💪 "}
@@ -120,7 +120,7 @@ export function SettingsTab({
                 <Select
                   value={editForm.max_cooking_time_minutes?.toString() ?? ""}
                   onValueChange={(v) =>
-                    updateField("max_cooking_time_minutes", v ? Number(v) : null)
+                    updateFieldAction("max_cooking_time_minutes", v ? Number(v) : null)
                   }
                 >
                   <SelectTrigger className="w-full md:w-64">
@@ -153,7 +153,7 @@ export function SettingsTab({
                     <Checkbox
                       checked={editForm.chooses_based_on_mood}
                       onCheckedChange={(v) =>
-                        updateField("chooses_based_on_mood", !!v)
+                        updateFieldAction("chooses_based_on_mood", !!v)
                       }
                     />
                     <div>
@@ -173,7 +173,7 @@ export function SettingsTab({
                     <Checkbox
                       checked={editForm.chooses_based_on_time}
                       onCheckedChange={(v) =>
-                        updateField("chooses_based_on_time", !!v)
+                        updateFieldAction("chooses_based_on_time", !!v)
                       }
                     />
                     <div>
@@ -193,7 +193,7 @@ export function SettingsTab({
                     <Checkbox
                       checked={editForm.chooses_based_on_convenience}
                       onCheckedChange={(v) =>
-                        updateField("chooses_based_on_convenience", !!v)
+                        updateFieldAction("chooses_based_on_convenience", !!v)
                       }
                     />
                     <div>
@@ -310,7 +310,7 @@ export function SettingsTab({
                 <Checkbox
                   checked={editForm.allow_meal_notifications}
                   onCheckedChange={(v) =>
-                    updateField("allow_meal_notifications", !!v)
+                    updateFieldAction("allow_meal_notifications", !!v)
                   }
                 />
                 <div>
@@ -330,7 +330,7 @@ export function SettingsTab({
                 <Checkbox
                   checked={editForm.allow_grocery_notifications}
                   onCheckedChange={(v) =>
-                    updateField("allow_grocery_notifications", !!v)
+                    updateFieldAction("allow_grocery_notifications", !!v)
                   }
                 />
                 <div>
@@ -350,7 +350,7 @@ export function SettingsTab({
                 <Checkbox
                   checked={editForm.allow_macro_notifications}
                   onCheckedChange={(v) =>
-                    updateField("allow_macro_notifications", !!v)
+                    updateFieldAction("allow_macro_notifications", !!v)
                   }
                 />
                 <div>

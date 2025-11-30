@@ -73,21 +73,24 @@ async function getMealPlans() {
   }
 
   // Transform data to match calendar component format
-  const formattedMeals = (mealPlans as MealPlan[] || []).map((plan) => ({
+  const formattedMeals = (mealPlans as any[] || []).map((plan) => ({
     date: plan.plan_date,
-    meals: plan.meal_plan_items.map((item) => ({
-      id: String(item.id),
-      recipeId: item.recipes?.id || null,
-      name: item.recipes?.title || "Unnamed meal",
-      description: item.recipes?.description || null,
-      type: item.meal_type,
-      calories: item.recipes?.total_calories || undefined,
-      protein: item.recipes?.protein_g || undefined,
-      carbs: item.recipes?.carbs_g || undefined,
-      fat: item.recipes?.fat_g || undefined,
-      cookTime: item.recipes?.cook_time_minutes || undefined,
-      difficulty: item.recipes?.difficulty || undefined,
-    })),
+    meals: plan.meal_plan_items.map((item: any) => {
+      const recipe = Array.isArray(item.recipes) ? item.recipes[0] : item.recipes;
+      return {
+        id: String(item.id),
+        recipeId: recipe?.id || null,
+        name: recipe?.title || "Unnamed meal",
+        description: recipe?.description || null,
+        type: item.meal_type,
+        calories: recipe?.total_calories || undefined,
+        protein: recipe?.protein_g || undefined,
+        carbs: recipe?.carbs_g || undefined,
+        fat: recipe?.fat_g || undefined,
+        cookTime: recipe?.cook_time_minutes || undefined,
+        difficulty: recipe?.difficulty || undefined,
+      };
+    }),
   }));
 
   return formattedMeals;

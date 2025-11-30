@@ -29,8 +29,8 @@ type Props = {
   editForm: ProfileData;
   isEditing: boolean;
   lookupData: LookupData;
-  updateField: <K extends keyof ProfileData>(key: K, value: ProfileData[K]) => void;
-  toggleArrayField: (
+  updateFieldAction: <K extends keyof ProfileData>(key: K, value: ProfileData[K]) => void;
+  toggleArrayFieldAction: (
     key: "favorite_cuisines" | "dietary_restrictions" | "kitchen_equipment" | "preferred_meal_types" | "flavor_preferences",
     id: number
   ) => void;
@@ -41,8 +41,8 @@ export function LifestyleTab({
   editForm,
   isEditing,
   lookupData,
-  updateField,
-  toggleArrayField,
+  updateFieldAction,
+  toggleArrayFieldAction,
 }: Props) {
   return (
     <div className="space-y-6">
@@ -59,7 +59,7 @@ export function LifestyleTab({
                 <Label>Budget Level</Label>
                 <Select
                   value={editForm.budget_level ?? ""}
-                  onValueChange={(v) => updateField("budget_level", v)}
+                  onValueChange={(v) => updateFieldAction("budget_level", v)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select budget" />
@@ -78,7 +78,7 @@ export function LifestyleTab({
                 <Label>Cooking Skill</Label>
                 <Select
                   value={editForm.cooking_skill ?? ""}
-                  onValueChange={(v) => updateField("cooking_skill", v)}
+                  onValueChange={(v) => updateFieldAction("cooking_skill", v)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select cooking skill" />
@@ -139,7 +139,7 @@ export function LifestyleTab({
                   >
                     <Checkbox
                       checked={editForm.is_morning_person}
-                      onCheckedChange={(v) => updateField("is_morning_person", !!v)}
+                      onCheckedChange={(v) => updateFieldAction("is_morning_person", !!v)}
                     />
                     <div>
                       <span className="font-medium">🌅 Morning person</span>
@@ -157,7 +157,7 @@ export function LifestyleTab({
                   >
                     <Checkbox
                       checked={editForm.is_night_person}
-                      onCheckedChange={(v) => updateField("is_night_person", !!v)}
+                      onCheckedChange={(v) => updateFieldAction("is_night_person", !!v)}
                     />
                     <div>
                       <span className="font-medium">🌙 Night owl</span>
@@ -176,7 +176,7 @@ export function LifestyleTab({
                     <Checkbox
                       checked={editForm.usually_rushed_mornings}
                       onCheckedChange={(v) =>
-                        updateField("usually_rushed_mornings", !!v)
+                        updateFieldAction("usually_rushed_mornings", !!v)
                       }
                     />
                     <div>
@@ -203,7 +203,7 @@ export function LifestyleTab({
                   >
                     <Checkbox
                       checked={editForm.breakfast_heavy}
-                      onCheckedChange={(v) => updateField("breakfast_heavy", !!v)}
+                      onCheckedChange={(v) => updateFieldAction("breakfast_heavy", !!v)}
                     />
                     <div>
                       <span className="font-medium">🍳 Breakfast</span>
@@ -219,7 +219,7 @@ export function LifestyleTab({
                   >
                     <Checkbox
                       checked={editForm.lunch_heavy}
-                      onCheckedChange={(v) => updateField("lunch_heavy", !!v)}
+                      onCheckedChange={(v) => updateFieldAction("lunch_heavy", !!v)}
                     />
                     <div>
                       <span className="font-medium">🥗 Lunch</span>
@@ -235,7 +235,7 @@ export function LifestyleTab({
                   >
                     <Checkbox
                       checked={editForm.dinner_heavy}
-                      onCheckedChange={(v) => updateField("dinner_heavy", !!v)}
+                      onCheckedChange={(v) => updateFieldAction("dinner_heavy", !!v)}
                     />
                     <div>
                       <span className="font-medium">🍽️ Dinner</span>
@@ -259,7 +259,7 @@ export function LifestyleTab({
                   >
                     <Checkbox
                       checked={editForm.snacks_included}
-                      onCheckedChange={(v) => updateField("snacks_included", !!v)}
+                      onCheckedChange={(v) => updateFieldAction("snacks_included", !!v)}
                     />
                     <div>
                       <span className="font-medium">🍎 Include snacks</span>
@@ -277,7 +277,7 @@ export function LifestyleTab({
                   >
                     <Checkbox
                       checked={editForm.snacks_often}
-                      onCheckedChange={(v) => updateField("snacks_often", !!v)}
+                      onCheckedChange={(v) => updateFieldAction("snacks_often", !!v)}
                     />
                     <div>
                       <span className="font-medium">🍿 Frequent snacker</span>
@@ -377,7 +377,7 @@ export function LifestyleTab({
                   <Checkbox
                     checked={editForm.kitchen_equipment.includes(equipment.id)}
                     onCheckedChange={() =>
-                      toggleArrayField("kitchen_equipment", equipment.id)
+                      toggleArrayFieldAction("kitchen_equipment", equipment.id)
                     }
                   />
                   <span className="text-sm font-medium">{equipment.label}</span>
