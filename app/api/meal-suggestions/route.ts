@@ -6,27 +6,22 @@ export interface MealSuggestionRequest {
   flowType: "what-to-cook" | "ingredients-needed";
   ingredientSource?: "use-my-ingredients" | "go-shopping" | null;
   ingredients?: string;
-  // Preferences
   selectedCuisines: string[];
   selectedRestrictions: string[];
   selectedEquipment: string[];
   spicyLevel: string;
   quickPreferences: string[];
-  // Details
   cookingTime?: number;
   mealType?: "snack" | "breakfast" | "lunch" | "dinner";
   extraInfo?: string;
   portions?: number;
   mealName?: string;
-  // For getting full recipe
   mode?: "suggestions" | "full-recipe";
   selectedMeal?: {
     name: string;
     description: string;
   };
-  // For getting different suggestions
   excludeMeals?: string[];
-  // User profile data for personalization
   userProfile?: {
     cookingSkill?: string | null;
     calorieTarget?: number | null;
@@ -41,7 +36,6 @@ export interface MealSuggestionRequest {
   };
 }
 
-// Schema for meal suggestions
 const mealSuggestionsSchema = z.object({
   suggestions: z.array(
     z.object({
@@ -113,7 +107,6 @@ ALWAYS include the Nutrition Facts section with reasonable estimates based on th
 function buildUserPrompt(request: MealSuggestionRequest): string {
   const parts: string[] = [];
 
-  // Flow type context
   if (request.flowType === "what-to-cook") {
     if (request.ingredientSource === "use-my-ingredients") {
       parts.push(
@@ -142,33 +135,28 @@ function buildUserPrompt(request: MealSuggestionRequest): string {
     }
   }
 
-  // Meal type
   if (request.mealType) {
     parts.push(`\nThis is for ${request.mealType}.`);
   }
 
-  // Cooking time constraint
   if (request.cookingTime) {
     parts.push(
       `\nI have about ${request.cookingTime} minutes available for cooking.`
     );
   }
 
-  // Cuisine preferences
   if (request.selectedCuisines.length > 0) {
     parts.push(
       `\nPreferred cuisines: ${request.selectedCuisines.join(", ")}.`
     );
   }
 
-  // Dietary restrictions (IMPORTANT - must be strictly followed)
   if (request.selectedRestrictions.length > 0) {
     parts.push(
       `\n⚠️ IMPORTANT - Dietary restrictions (must be strictly followed): ${request.selectedRestrictions.join(", ")}.`
     );
   }
 
-  // Spicy level
   if (request.spicyLevel && request.spicyLevel !== "none") {
     const spicyDescriptions: Record<string, string> = {
       mild: "mildly spiced",
@@ -182,7 +170,6 @@ function buildUserPrompt(request: MealSuggestionRequest): string {
     parts.push("\nSpice preference: I prefer no spice/heat in my food.");
   }
 
-  // Quick preferences (mood)
   if (request.quickPreferences.length > 0) {
     const moodDescriptions: Record<string, string> = {
       healthy: "something healthy and nutritious",
@@ -198,23 +185,19 @@ function buildUserPrompt(request: MealSuggestionRequest): string {
     parts.push(`\nI'm in the mood for: ${moods}.`);
   }
 
-  // Kitchen equipment
   if (request.selectedEquipment.length > 0) {
     parts.push(
       `\nKitchen equipment I can use: ${request.selectedEquipment.join(", ")}.`
     );
   }
 
-  // Extra info
   if (request.extraInfo) {
     parts.push(`\nExtra notes: ${request.extraInfo}`);
   }
 
-  // User profile data for personalization
   if (request.userProfile) {
     const profile = request.userProfile;
 
-    // Cooking skill level - affects recipe complexity
     if (profile.cookingSkill) {
       const skillDescriptions: Record<string, string> = {
         beginner: "I'm a beginner cook, so please keep recipes simple with basic techniques",
@@ -224,7 +207,6 @@ function buildUserPrompt(request: MealSuggestionRequest): string {
       parts.push(`\n${skillDescriptions[profile.cookingSkill] || `My cooking skill level is: ${profile.cookingSkill}`}.`);
     }
 
-    // Budget level
     if (profile.budgetLevel) {
       const budgetDescriptions: Record<string, string> = {
         budget: "I'm on a tight budget, so please suggest affordable ingredients",
@@ -234,7 +216,6 @@ function buildUserPrompt(request: MealSuggestionRequest): string {
       parts.push(`\n${budgetDescriptions[profile.budgetLevel] || ""}`);
     }
 
-    // Primary goal - affects nutrition focus
     if (profile.primaryGoal) {
       const goalDescriptions: Record<string, string> = {
         lose_weight: "My goal is weight loss, so please prioritize lower-calorie, high-protein options",
@@ -248,22 +229,18 @@ function buildUserPrompt(request: MealSuggestionRequest): string {
       parts.push(`\n${goalDescriptions[profile.primaryGoal] || ""}`);
     }
 
-    // Calorie and macro targets
     if (profile.calorieTarget) {
       parts.push(`\nMy daily calorie target is around ${profile.calorieTarget} kcal. Please suggest meals that fit within reasonable portion of this.`);
     }
 
-    // Food dislikes - IMPORTANT to avoid
     if (profile.foodDislikes && profile.foodDislikes.length > 0) {
       parts.push(`\n⚠️ IMPORTANT - Foods I dislike (please avoid): ${profile.foodDislikes.join(", ")}.`);
     }
 
-    // Other allergy notes - CRITICAL for safety
     if (profile.otherAllergyNotes) {
       parts.push(`\n⚠️ CRITICAL - Additional allergy/dietary notes: ${profile.otherAllergyNotes}`);
     }
 
-    // Flavor preferences
     if (profile.flavorPreferences && profile.flavorPreferences.length > 0) {
       parts.push(`\nFlavor preferences: I enjoy ${profile.flavorPreferences.join(", ")} flavors.`);
     }
@@ -304,7 +281,6 @@ function buildFullRecipePrompt(request: MealSuggestionRequest): string {
     parts.push(`\nPlease scale the recipe for ${request.portions} portions.`);
   }
 
-  // Include all the constraints that must be followed
   if (request.selectedRestrictions.length > 0) {
     parts.push(`\n⚠️ IMPORTANT - Dietary restrictions (must be strictly followed): ${request.selectedRestrictions.join(", ")}.`);
   }
@@ -326,7 +302,6 @@ function buildFullRecipePrompt(request: MealSuggestionRequest): string {
     parts.push(`\nPlease prioritize using these available ingredients: ${request.ingredients}`);
   }
 
-  // User profile data for personalization
   if (request.userProfile) {
     const profile = request.userProfile;
 
@@ -387,7 +362,6 @@ export async function POST(req: Request) {
     console.log("[meal-suggestions] Mode:", body.mode);
     console.log("[meal-suggestions] OPENAI_API_KEY set:", !!process.env.OPENAI_API_KEY);
 
-    // Mode 1: Get structured meal suggestions (JSON)
     if (body.mode === "suggestions" && body.flowType === "what-to-cook") {
       const prompt = buildSuggestionsPrompt(body);
       console.log("[meal-suggestions] Suggestions prompt:", prompt);
@@ -404,12 +378,10 @@ export async function POST(req: Request) {
       return Response.json(result.object);
     }
 
-    // Mode 2: Get full recipe (streamed)
     let prompt: string;
     if (body.mode === "full-recipe" && body.selectedMeal) {
       prompt = buildFullRecipePrompt(body);
     } else if (body.flowType === "ingredients-needed") {
-      // Direct recipe request for a specific meal name
       prompt = `Please provide the complete recipe for "${body.mealName}".`;
       if (body.portions && body.portions > 1) {
         prompt += `\nPlease scale the recipe for ${body.portions} portions.`;

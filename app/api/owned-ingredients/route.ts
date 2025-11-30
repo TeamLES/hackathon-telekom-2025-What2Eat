@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest } from "next/server";
 
-// GET - Get all checked (owned) ingredients from active shopping lists
 export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient();
@@ -13,7 +12,6 @@ export async function GET(req: NextRequest) {
 
     const userId = authData.user.id;
 
-    // Get all checked items from active grocery lists
     const { data: lists, error } = await supabase
       .from("grocery_lists")
       .select(`
@@ -30,13 +28,11 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: "Failed to fetch" }, { status: 500 });
     }
 
-    // Extract unique checked ingredient names
     const ownedIngredients = new Set<string>();
 
     for (const list of lists || []) {
       for (const item of list.grocery_list_items || []) {
         if (item.is_checked) {
-          // Normalize ingredient name (lowercase, trim)
           ownedIngredients.add(item.item_name.toLowerCase().trim());
         }
       }

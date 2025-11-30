@@ -20,7 +20,6 @@ const ingredientsSchema = z.object({
   ),
 });
 
-// GET - Parse ingredients from a meal's description
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -36,13 +35,11 @@ export async function GET(request: NextRequest) {
     const description = request.nextUrl.searchParams.get("description");
     const name = request.nextUrl.searchParams.get("name");
 
-    // If description is provided directly, parse it
     if (description && name) {
       const ingredients = await parseIngredientsFromDescription(name, description);
       return NextResponse.json({ ingredients, source: "description" });
     }
 
-    // If recipeId is provided, get recipe details
     if (recipeId) {
       const { data: recipe, error } = await supabase
         .from("recipes")
@@ -61,7 +58,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ingredients, source: "recipe" });
     }
 
-    // If mealPlanId is provided, get from meal plan
     if (mealPlanId) {
       const { data: mealPlan, error } = await supabase
         .from("meal_plans")
@@ -84,8 +80,6 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Meal plan not found" }, { status: 404 });
       }
 
-      // Use recipe description if available, otherwise use meal description
-      // recipes is an array due to join, take first element
       const recipesArray = mealPlan.recipes as unknown as { id: number; name: string; description: string | null }[] | null;
       const recipe = recipesArray?.[0] || null;
       const mealName = recipe?.name || mealPlan.meal_name || "Meal";

@@ -10,12 +10,10 @@ export default async function DashboardLayout({
   const { isAuthenticated, hasCompletedOnboarding } =
     await checkOnboardingStatus();
 
-  // Not logged in -> redirect to login
   if (!isAuthenticated) {
     redirect("/auth/login");
   }
 
-  // Not completed onboarding -> redirect to onboarding
   if (!hasCompletedOnboarding) {
     redirect("/onboarding");
   }

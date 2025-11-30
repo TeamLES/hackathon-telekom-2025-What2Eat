@@ -17,21 +17,13 @@ export interface Ingredient {
 interface IngredientChecklistProps {
   ingredients: Ingredient[];
   title?: string;
-  /** Ingredients that user already has (for comparison) */
   userOwnedIngredients?: string[];
-  /** Called when user saves selected ingredients to shopping list */
   onSaveToList?: (selectedIngredients: Ingredient[]) => Promise<void>;
-  /** Initial selection - if not provided, selects items user doesn't have */
   initialSelection?: Set<number>;
-  /** Controlled selection state */
   selectedIndices?: Set<number>;
-  /** Called when selection changes (for controlled mode) */
   onSelectionChange?: (indices: Set<number>) => void;
-  /** Show compact version without header */
   compact?: boolean;
-  /** Custom class name */
   className?: string;
-  /** Show optional badge */
   showOptionalBadge?: boolean;
 }
 
@@ -47,7 +39,6 @@ export function IngredientChecklist({
   className,
   showOptionalBadge = false,
 }: IngredientChecklistProps) {
-  // Mark which ingredients user has
   const ingredientsWithOwnership = ingredients.map((ing) => {
     const userHasIt = ing.userHasIt ?? userOwnedIngredients.some((owned) =>
       ing.name.toLowerCase().includes(owned.toLowerCase()) ||
@@ -56,7 +47,6 @@ export function IngredientChecklist({
     return { ...ing, userHasIt };
   });
 
-  // Initialize selection - by default select items user doesn't have
   const getDefaultSelection = () => {
     if (initialSelection) return initialSelection;
     const indices = ingredientsWithOwnership
@@ -65,7 +55,6 @@ export function IngredientChecklist({
     return new Set(indices);
   };
 
-  // Support both controlled and uncontrolled mode
   const [internalIndices, setInternalIndices] = useState<Set<number>>(getDefaultSelection);
   const selectedIndices = controlledIndices ?? internalIndices;
   const setSelectedIndices = (value: Set<number> | ((prev: Set<number>) => Set<number>)) => {
@@ -90,7 +79,6 @@ export function IngredientChecklist({
       }
       return newSet;
     });
-    // Reset saved state when selection changes
     if (saved) setSaved(false);
   };
 
@@ -124,7 +112,6 @@ export function IngredientChecklist({
 
   return (
     <div className={cn("bg-muted/50 rounded-lg p-4 space-y-3", className)}>
-      {/* Header */}
       {!compact && (
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h4 className="font-semibold flex items-center gap-2">
@@ -170,7 +157,6 @@ export function IngredientChecklist({
         </div>
       )}
 
-      {/* Legend */}
       {hasUserOwnedIngredients && (
         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
@@ -186,10 +172,8 @@ export function IngredientChecklist({
         </div>
       )}
 
-      {/* Ingredient Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {ingredientsWithOwnership.map((ing, index) => {
-          // Format quantity display
           const qtyDisplay = ing.quantity && ing.quantity > 0
             ? `${ing.quantity}${ing.unit ? ` ${ing.unit}` : ''}`
             : ing.unit || '';
@@ -239,7 +223,6 @@ export function IngredientChecklist({
         })}
       </div>
 
-      {/* Compact save button */}
       {compact && onSaveToList && (
         <Button
           size="sm"

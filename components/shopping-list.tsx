@@ -39,7 +39,6 @@ export function ShoppingList() {
       if (!response.ok) throw new Error("Failed to fetch");
       const data = await response.json();
       setLists(data.lists || []);
-      // Auto-expand first list if exists
       if (data.lists?.length > 0 && !expandedListId) {
         setExpandedListId(data.lists[0].id);
       }
@@ -61,7 +60,6 @@ export function ShoppingList() {
 
       if (!response.ok) throw new Error("Failed to toggle");
 
-      // Update local state
       setLists((prev) =>
         prev.map((list) => {
           if (list.id !== listId) return list;
@@ -187,7 +185,6 @@ export function ShoppingList() {
 
           return (
             <div key={list.id} className="border rounded-lg overflow-hidden">
-              {/* List Header */}
               <button
                 onClick={() => setExpandedListId(isExpanded ? null : list.id)}
                 className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
@@ -215,7 +212,6 @@ export function ShoppingList() {
                 </div>
               </button>
 
-              {/* Items List */}
               {isExpanded && (
                 <div className="border-t">
                   <div className="max-h-64 overflow-y-auto">
@@ -256,7 +252,6 @@ export function ShoppingList() {
                     ))}
                   </div>
 
-                  {/* Actions */}
                   <div className="flex gap-2 p-3 border-t bg-muted/30">
                     {allChecked ? (
                       <Button

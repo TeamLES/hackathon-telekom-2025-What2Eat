@@ -40,7 +40,6 @@ export function TopNav({ onPlusClick, showActions = true }: TopNavProps) {
             </Button>
           )}
 
-          {/* Profile button - mobile only */}
           {showActions && (
             <Link
               href="/dashboard/profile"

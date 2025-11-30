@@ -12,7 +12,6 @@ interface AuthLayoutProps {
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div className="relative min-h-screen bg-background overflow-x-hidden">
-      {/* Emoji Background */}
       <div
         className="pointer-events-none absolute inset-0 z-0 select-none opacity-90 [mask-image:radial-gradient(circle_at_center,rgba(0,0,0,0.45),transparent)]"
         aria-hidden
@@ -33,7 +32,6 @@ export function AuthLayout({ children }: AuthLayoutProps) {
       </div>
 
       <div className="relative z-10 flex flex-col min-h-svh">
-        {/* Navigation */}
         <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-gradient-to-b from-background/95 via-background/90 to-background/75 dark:from-[#141414]/85 dark:via-[#141414]/70 dark:to-[#141414]/55 backdrop-blur supports-[backdrop-filter]:bg-background/65 ring-1 ring-black/5 dark:ring-white/12 shadow-[0_8px_18px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_45px_rgba(0,0,0,0.3)]">
           <div className="flex h-20 items-center justify-between gap-4 px-4 md:px-8">
             <Link href="/" className="flex items-center gap-3">
@@ -48,7 +46,6 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           </div>
         </header>
 
-        {/* Main Content */}
         <main className="flex flex-1 items-center justify-center p-4">
           <div className="w-full max-w-md overflow-hidden rounded-[32px] ">
             <div className="p-6 md:p-8">

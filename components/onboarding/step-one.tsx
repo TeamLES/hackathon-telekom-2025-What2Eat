@@ -82,7 +82,6 @@ export function StepOne() {
         </p>
       </div>
 
-      {/* Basic Information */}
       <Card>
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
@@ -92,7 +91,6 @@ export function StepOne() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Gender */}
             <div className="space-y-2">
               <Label htmlFor="gender">
                 Gender <span className="text-destructive">*</span>
@@ -125,7 +123,6 @@ export function StepOne() {
               )}
             </div>
 
-            {/* Age */}
             <div className="space-y-2">
               <Label htmlFor="age">
                 Age <span className="text-destructive">*</span>
@@ -144,7 +141,6 @@ export function StepOne() {
               )}
             </div>
 
-            {/* Height */}
             <div className="space-y-2">
               <Label htmlFor="height_cm">
                 Height (cm) <span className="text-destructive">*</span>
@@ -165,7 +161,6 @@ export function StepOne() {
               )}
             </div>
 
-            {/* Weight */}
             <div className="space-y-2">
               <Label htmlFor="weight_kg">
                 Weight (kg) <span className="text-destructive">*</span>
@@ -188,7 +183,6 @@ export function StepOne() {
             </div>
           </div>
 
-          {/* Activity Level */}
           <div className="space-y-2">
             <Label htmlFor="activity_level">
               Activity Level <span className="text-destructive">*</span>
@@ -223,7 +217,6 @@ export function StepOne() {
             )}
           </div>
 
-          {/* Primary Goal */}
           <div className="space-y-2">
             <Label htmlFor="primary_goal">
               Primary Goal <span className="text-destructive">*</span>
@@ -260,7 +253,6 @@ export function StepOne() {
         </CardContent>
       </Card>
 
-      {/* Calorie & Macro Targets */}
       <Card>
         <CardHeader className="flex flex-row items-start justify-between space-y-0">
           <div>
@@ -285,7 +277,6 @@ export function StepOne() {
                 return;
               }
 
-              // BMR calculation (Mifflin-St Jeor)
               let bmr: number;
               if (gender === "male") {
                 bmr = 10 * weight + 6.25 * height - 5 * age + 5;
@@ -293,7 +284,6 @@ export function StepOne() {
                 bmr = 10 * weight + 6.25 * height - 5 * age - 161;
               }
 
-              // Activity multiplier
               const activityMultipliers: Record<string, number> = {
                 sedentary: 1.2,
                 lightly_active: 1.375,
@@ -311,7 +301,6 @@ export function StepOne() {
                 tdee = Math.round(tdee * 1.1);
               }
 
-              // Macro distribution
               const proteinG = Math.round(weight * 2);
               const fatG = Math.round((tdee * 0.25) / 9);
               const proteinCals = proteinG * 4;
@@ -331,7 +320,6 @@ export function StepOne() {
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Macro inputs grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="calorie_target">
@@ -391,7 +379,6 @@ export function StepOne() {
         </CardContent>
       </Card>
 
-      {/* Eating Preferences */}
       <Card>
         <CardHeader>
           <CardTitle>Eating Preferences</CardTitle>
@@ -401,7 +388,6 @@ export function StepOne() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Meals per day */}
             <div className="space-y-2">
               <Label htmlFor="meals_per_day">
                 Meals per day <span className="text-destructive">*</span>
@@ -422,7 +408,6 @@ export function StepOne() {
               )}
             </div>
 
-            {/* Budget Level */}
             <div className="space-y-2">
               <Label htmlFor="budget_level">
                 Budget <span className="text-destructive">*</span>
@@ -457,7 +442,6 @@ export function StepOne() {
               )}
             </div>
 
-            {/* Cooking Skill */}
             <div className="space-y-2">
               <Label htmlFor="cooking_skill">
                 Cooking Skill <span className="text-destructive">*</span>

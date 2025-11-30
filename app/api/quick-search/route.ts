@@ -26,7 +26,6 @@ interface UserPreferences {
   ai_tone: string | null;
 }
 
-// Schema for meal suggestions
 const mealSuggestionSchema = z.object({
   suggestions: z.array(
     z.object({
@@ -49,7 +48,6 @@ async function getUserPreferences(): Promise<UserPreferences | null> {
 
     if (!userId) return null;
 
-    // Load user preferences from database
     const [
       nutritionRes,
       dietRestrictionsRes,
@@ -93,14 +91,12 @@ async function getUserPreferences(): Promise<UserPreferences | null> {
         .select("max_cooking_time_minutes, ai_tone")
         .eq("user_id", userId)
         .single(),
-      // Lookup tables
       supabase.from("cuisines").select("id, name"),
       supabase.from("dietary_restrictions").select("id, label"),
       supabase.from("kitchen_equipment").select("id, label"),
       supabase.from("flavor_profiles").select("id, label"),
     ]);
 
-    // Map IDs to labels
     const cuisineMap = new Map(
       cuisineLookupRes.data?.map((c: { id: number; name: string }) => [c.id, c.name]) || []
     );
@@ -160,11 +156,9 @@ export async function POST(req: Request) {
     const mode = body.mode || "suggestions";
     console.log("[quick-search] Query:", body.query, "Mode:", mode);
 
-    // Load user preferences
     const prefs = await getUserPreferences();
     console.log("[quick-search] User preferences loaded:", !!prefs);
 
-    // MODE 1: Get structured meal suggestions
     if (mode === "suggestions") {
       const suggestionsPrompt = buildSuggestionsPrompt(body.query, prefs);
 
@@ -181,7 +175,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // MODE 2: Get full recipe (streamed markdown)
     if (mode === "full-recipe") {
       const recipePrompt = buildRecipePrompt(body.query, body.selectedMeal, prefs);
 
@@ -195,7 +188,6 @@ export async function POST(req: Request) {
       return result.toTextStreamResponse();
     }
 
-    // Default fallback
     return new Response(
       JSON.stringify({ error: "Invalid mode" }),
       { status: 400, headers: { "Content-Type": "application/json" } }

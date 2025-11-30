@@ -116,20 +116,17 @@ const RESTRICTIONS = [
 export function MealPlanner({ userProfile }: MealPlannerProps) {
   const router = useRouter();
 
-  // Days configuration
   const [customDays, setCustomDays] = useState(7);
   const [startDate, setStartDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split("T")[0];
   });
 
-  // Meal types
   const [includeBreakfast, setIncludeBreakfast] = useState(true);
   const [includeLunch, setIncludeLunch] = useState(true);
   const [includeDinner, setIncludeDinner] = useState(true);
   const [includeSnacks, setIncludeSnacks] = useState(false);
 
-  // Preferences (editable, initialized from profile)
   const [cookingSkill, setCookingSkill] = useState(userProfile.cookingSkill || "intermediate");
   const [budgetLevel, setBudgetLevel] = useState(userProfile.budgetLevel || "medium");
   const [primaryGoal, setPrimaryGoal] = useState(userProfile.primaryGoal || "maintain");
@@ -141,7 +138,6 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>(userProfile.cuisines || []);
   const [selectedRestrictions, setSelectedRestrictions] = useState<string[]>(userProfile.restrictions || []);
 
-  // UI state
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<MealPlanDay[] | null>(null);
@@ -149,7 +145,6 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
   const [savingProgress, setSavingProgress] = useState({ current: 0, total: 0 });
   const [saveComplete, setSaveComplete] = useState(false);
 
-  // Calculate meals per day
   const mealsPerDay = [includeBreakfast, includeLunch, includeDinner, includeSnacks].filter(Boolean).length;
 
   const toggleCuisine = (cuisine: string) => {
@@ -289,13 +284,10 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
 
   return (
     <div className="space-y-6">
-      {/* Configuration */}
       {!generatedPlan && (
         <div className="space-y-4">
-          {/* Basic Settings Card */}
           <Card>
             <CardContent className="p-6 space-y-6">
-              {/* Days and Start Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
@@ -341,7 +333,6 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
                 </div>
               </div>
 
-              {/* Meal Types */}
               <div className="space-y-3">
                 <Label className="text-sm font-medium flex items-center gap-2">
                   <ChefHat className="w-4 h-4" />
@@ -383,7 +374,6 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
                 </div>
               </div>
 
-              {/* Goal Selection */}
               <div className="space-y-3">
                 <Label className="text-sm font-medium flex items-center gap-2">
                   <Target className="w-4 h-4" />
@@ -408,9 +398,7 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
                 </div>
               </div>
 
-              {/* Quick Preferences Row */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {/* Cooking Skill */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
                     <Utensils className="w-4 h-4" />
@@ -434,7 +422,6 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
                   </div>
                 </div>
 
-                {/* Budget */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
                     <DollarSign className="w-4 h-4" />
@@ -458,7 +445,6 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
                   </div>
                 </div>
 
-                {/* Max Cooking Time */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
                     <Clock className="w-4 h-4" />
@@ -478,7 +464,6 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
                 </div>
               </div>
 
-              {/* Advanced Settings Toggle */}
               <button
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -488,10 +473,8 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
                 {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
 
-              {/* Advanced Settings */}
               {showAdvanced && (
                 <div className="space-y-4 pt-4 border-t">
-                  {/* Nutrition Targets */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div className="space-y-2">
                       <Label className="text-sm font-medium flex items-center gap-2">
@@ -563,7 +546,6 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
                     </div>
                   </div>
 
-                  {/* Cuisines */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Preferred cuisines</Label>
                     <div className="flex flex-wrap gap-2">
@@ -587,7 +569,6 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
                     </div>
                   </div>
 
-                  {/* Dietary Restrictions */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Dietary restrictions</Label>
                     <div className="flex flex-wrap gap-2">
@@ -613,7 +594,6 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
                 </div>
               )}
 
-              {/* Summary */}
               <div className="p-4 rounded-lg bg-muted/50 border border-dashed">
                 <p className="text-sm text-muted-foreground">
                   <span className="font-medium text-foreground">{customDays} days</span> ×
@@ -632,7 +612,6 @@ export function MealPlanner({ userProfile }: MealPlannerProps) {
                 )}
               </div>
 
-              {/* Generate button */}
               <Button
                 onClick={generateMealPlan}
                 disabled={isGenerating || mealsPerDay === 0}

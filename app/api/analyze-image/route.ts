@@ -3,10 +3,8 @@ import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 
-// Allow responses up to 60 seconds for image processing
 export const maxDuration = 60;
 
-// Schema for detected ingredients with confidence scores
 const ingredientsSchema = z.object({
   ingredients: z
     .array(
@@ -41,7 +39,6 @@ export async function POST(req: Request) {
       return Response.json({ error: "Image data is required." }, { status: 400 });
     }
 
-    // Validate it's a proper data URL
     if (!image.startsWith("data:image/")) {
       return Response.json(
         { error: "Invalid image format. Expected a data URL." },
@@ -49,7 +46,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Use GPT-4o which has excellent vision capabilities
     const { object } = await generateObject({
       model: openai("gpt-4o"),
       schema: ingredientsSchema,
@@ -82,10 +78,9 @@ If you're unsure about an item, include it with a lower confidence score.`,
           ],
         },
       ],
-      temperature: 0.3, // Lower temperature for more consistent results
+      temperature: 0.3,
     });
 
-    // If saveToStorage is true, save to Supabase
     let snapshotId: number | null = null;
     
     if (saveToStorage) {
@@ -98,16 +93,13 @@ If you're unsure about an item, include it with a lower confidence score.`,
 
       if (!userError && user) {
         try {
-          // Convert data URL to blob for storage
           const base64Data = image.split(",")[1];
           const contentType = image.split(";")[0].split(":")[1];
           const blob = Buffer.from(base64Data, "base64");
           
-          // Generate unique filename
           const timestamp = Date.now();
           const fileName = `${user.id}/${timestamp}.jpg`;
           
-          // Upload to Supabase Storage
           const { error: uploadError } = await supabase.storage
             .from("fridge-photos")
             .upload(fileName, blob, {
@@ -118,7 +110,6 @@ If you're unsure about an item, include it with a lower confidence score.`,
           if (uploadError) {
             console.error("Failed to upload image:", uploadError);
           } else {
-            // Save snapshot record to database
             const { data: snapshot, error: snapshotError } = await supabase
               .from("fridge_snapshots")
               .insert({
@@ -135,7 +126,6 @@ If you're unsure about an item, include it with a lower confidence score.`,
             } else if (snapshot) {
               snapshotId = snapshot.id;
               
-              // Save individual ingredient detections
               const ingredientItems = object.ingredients.map((ing) => ({
                 snapshot_id: snapshot.id,
                 detected_name: ing.name,
@@ -155,12 +145,10 @@ If you're unsure about an item, include it with a lower confidence score.`,
           }
         } catch (storageError) {
           console.error("Storage error:", storageError);
-          // Continue even if storage fails - still return the detected ingredients
         }
       }
     }
 
-    // Return the detected ingredients (simplified format for the UI)
     return Response.json({
       ingredients: object.ingredients.map((i) => i.name),
       detailedIngredients: object.ingredients,
@@ -169,7 +157,6 @@ If you're unsure about an item, include it with a lower confidence score.`,
   } catch (error) {
     console.error("Error analyzing image:", error);
     
-    // Check if it's an API key error
     if (error instanceof Error && error.message.includes("API key")) {
       return Response.json(
         { error: "OpenAI API configuration error. Please check the API key." },

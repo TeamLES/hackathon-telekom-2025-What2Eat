@@ -36,7 +36,6 @@ type Props = {
 export function AccountTab({ profile, editForm, isEditing, updateFieldAction }: Props) {
   return (
     <div className="space-y-6">
-      {/* Account Info */}
       <Card>
         <CardHeader>
           <CardTitle>📧 Account</CardTitle>
@@ -93,7 +92,6 @@ export function AccountTab({ profile, editForm, isEditing, updateFieldAction }: 
         </CardContent>
       </Card>
 
-      {/* Basic Info */}
       <Card>
         <CardHeader>
           <CardTitle>📊 Basic Information</CardTitle>
@@ -259,7 +257,6 @@ export function AccountTab({ profile, editForm, isEditing, updateFieldAction }: 
         </CardContent>
       </Card>
 
-      {/* Nutrition Targets */}
       <Card>
         <CardHeader className="flex flex-row items-start justify-between space-y-0">
           <div>
@@ -272,7 +269,6 @@ export function AccountTab({ profile, editForm, isEditing, updateFieldAction }: 
               variant="outline"
               size="sm"
               onClick={() => {
-                // Calculate using Mifflin-St Jeor formula
                 const weight = editForm.weight_kg;
                 const height = editForm.height_cm;
                 const age = editForm.age;
@@ -285,7 +281,6 @@ export function AccountTab({ profile, editForm, isEditing, updateFieldAction }: 
                   return;
                 }
 
-                // BMR calculation (Mifflin-St Jeor)
                 let bmr: number;
                 if (gender === "male") {
                   bmr = 10 * weight + 6.25 * height - 5 * age + 5;
@@ -293,7 +288,6 @@ export function AccountTab({ profile, editForm, isEditing, updateFieldAction }: 
                   bmr = 10 * weight + 6.25 * height - 5 * age - 161;
                 }
 
-                // Activity multiplier
                 const activityMultipliers: Record<string, number> = {
                   sedentary: 1.2,
                   lightly_active: 1.375,
@@ -304,17 +298,12 @@ export function AccountTab({ profile, editForm, isEditing, updateFieldAction }: 
                 const multiplier = activityMultipliers[activity || "sedentary"] || 1.2;
                 let tdee = Math.round(bmr * multiplier);
 
-                // Goal adjustment
                 if (goal === "lose_weight") {
-                  tdee = Math.round(tdee * 0.8); // 20% deficit
+                  tdee = Math.round(tdee * 0.8);
                 } else if (goal === "gain_muscle") {
-                  tdee = Math.round(tdee * 1.1); // 10% surplus
+                  tdee = Math.round(tdee * 1.1);
                 }
 
-                // Macro distribution (balanced approach)
-                // Protein: 2g per kg body weight (for active individuals)
-                // Fat: 25% of calories
-                // Carbs: remaining calories
                 const proteinG = Math.round(weight * 2);
                 const fatG = Math.round((tdee * 0.25) / 9);
                 const proteinCals = proteinG * 4;

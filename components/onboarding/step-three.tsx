@@ -107,7 +107,6 @@ export function StepThree() {
         </p>
       </div>
 
-      {/* Kitchen Equipment */}
       {kitchenEquipment.length > 0 && (
         <Card>
           <CardHeader>
@@ -139,7 +138,6 @@ export function StepThree() {
         </Card>
       )}
 
-      {/* AI Preferences */}
       <Card>
         <CardHeader>
           <CardTitle>AI Assistant Preferences (optional)</CardTitle>

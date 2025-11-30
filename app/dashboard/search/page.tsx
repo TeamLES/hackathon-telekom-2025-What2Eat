@@ -45,23 +45,18 @@ type MealType = (typeof MEAL_TYPES)[number]["value"];
 export default function SearchPage() {
   const supabase = createClient();
 
-  // Step management
   const [currentStep, setCurrentStep] = useState<Step>("search");
 
-  // Search state
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Suggestions state
   const [suggestions, setSuggestions] = useState<MealSuggestion[]>([]);
   const [selectedMeal, setSelectedMeal] = useState<MealSuggestion | null>(null);
 
-  // Recipe state
   const [recipeContent, setRecipeContent] = useState("");
   const [isLoadingRecipe, setIsLoadingRecipe] = useState(false);
 
-  // Calendar state
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedMealType, setSelectedMealType] = useState<MealType>("lunch");
   const [isSaving, startSaveTransition] = useTransition();
@@ -69,7 +64,6 @@ export default function SearchPage() {
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Search for meal suggestions
   const handleSearch = async (searchQuery?: string) => {
     const finalQuery = searchQuery || query;
     if (!finalQuery.trim()) return;
@@ -112,7 +106,6 @@ export default function SearchPage() {
     }
   };
 
-  // Get full recipe for selected meal
   const handleSelectMeal = async (meal: MealSuggestion) => {
     setSelectedMeal(meal);
     setRecipeContent("");
@@ -165,7 +158,6 @@ export default function SearchPage() {
     }
   };
 
-  // Save to calendar
   const handleSaveToCalendar = () => {
     if (!selectedDate || !selectedMeal) return;
 
@@ -177,7 +169,6 @@ export default function SearchPage() {
           return;
         }
 
-        // Check if meal plan exists for this date
         const { data: existingPlan } = await supabase
           .from("meal_plans")
           .select("id")
@@ -190,7 +181,6 @@ export default function SearchPage() {
         if (existingPlan) {
           mealPlanId = existingPlan.id;
         } else {
-          // Create new meal plan
           const { data: newPlan, error: planError } = await supabase
             .from("meal_plans")
             .insert({
@@ -206,21 +196,16 @@ export default function SearchPage() {
           mealPlanId = newPlan.id;
         }
 
-        // Map difficulty to database enum
         const difficultyMap: Record<string, "beginner" | "intermediate" | "advanced"> = {
           "Easy": "beginner",
           "Medium": "intermediate",
           "Hard": "advanced",
         };
 
-        // Combine short description with full recipe markdown
-        // Truncate if needed (description field may have limits)
         const fullDescription = recipeContent
           ? `${selectedMeal.description}\n\n---\n\n${recipeContent}`.slice(0, 10000)
           : selectedMeal.description;
 
-        // First, save the recipe to recipes table (or find existing)
-        // For now, we'll create a simple recipe entry
         const { data: recipe, error: recipeError } = await supabase
           .from("recipes")
           .insert({
@@ -239,10 +224,8 @@ export default function SearchPage() {
 
         if (recipeError) {
           console.error("Recipe save error:", recipeError);
-          // Recipe might already exist or have constraint issues - continue anyway
         }
 
-        // Add meal plan item
         const { error: itemError } = await supabase
           .from("meal_plan_items")
           .insert({
@@ -299,12 +282,10 @@ export default function SearchPage() {
     }
   };
 
-  // Get today's date in YYYY-MM-DD format for min date
   const today = getLocalDateString();
 
   return (
     <div className="container mx-auto p-4 md:p-6 max-w-4xl">
-      {/* Header with back button */}
       <div className="mb-6 flex items-center gap-4">
         {currentStep !== "search" && (
           <Button variant="ghost" size="icon" onClick={goBack}>
@@ -328,7 +309,6 @@ export default function SearchPage() {
         {currentStep !== "search" && <div className="w-10" />}
       </div>
 
-      {/* Error State */}
       {error && (
         <Card className="border-destructive bg-destructive/10 mb-6">
           <CardContent className="pt-6">
@@ -342,10 +322,8 @@ export default function SearchPage() {
         </Card>
       )}
 
-      {/* Step 1: Search */}
       {currentStep === "search" && (
         <>
-          {/* Search Input with nicer styling */}
           <Card className="mb-6 overflow-hidden border-2 border-primary/20 focus-within:border-primary transition-colors">
             <CardContent className="p-0">
               <div className="flex items-center">
@@ -374,7 +352,6 @@ export default function SearchPage() {
             </CardContent>
           </Card>
 
-          {/* Example queries in a nicer grid */}
           <div className="mb-8">
             <p className="text-sm text-muted-foreground mb-4 text-center">
               ✨ Try one of these ideas:
@@ -397,7 +374,6 @@ export default function SearchPage() {
             </div>
           </div>
 
-          {/* Loading Animation */}
           {isLoading && (
             <Card className="border-dashed">
               <CardContent className="py-4">
@@ -406,7 +382,6 @@ export default function SearchPage() {
             </Card>
           )}
 
-          {/* Empty state with tips */}
           {!isLoading && !error && (
             <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-dashed">
               <CardContent className="py-8 text-center">
@@ -422,7 +397,6 @@ export default function SearchPage() {
         </>
       )}
 
-      {/* Step 2: Suggestions */}
       {currentStep === "suggestions" && (
         <div className="space-y-4">
           <div className="text-center mb-6">
@@ -479,10 +453,8 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* Step 3: Full Recipe */}
       {currentStep === "recipe" && selectedMeal && (
         <div className="space-y-6">
-          {/* Meal header card */}
           <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
             <div className="flex items-center gap-4">
               <span className="text-3xl">{selectedMeal.emoji}</span>
@@ -496,12 +468,10 @@ export default function SearchPage() {
             </div>
           </div>
 
-          {/* Loading state */}
           {isLoadingRecipe && !recipeContent && (
             <CookingAnimation message="Preparing your delicious recipe..." />
           )}
 
-          {/* Recipe content with markdown */}
           {recipeContent && (
             <Card>
               <CardContent className="pt-6">
@@ -512,7 +482,6 @@ export default function SearchPage() {
             </Card>
           )}
 
-          {/* Streaming indicator */}
           {isLoadingRecipe && recipeContent && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span className="animate-spin">⏳</span>
@@ -520,7 +489,6 @@ export default function SearchPage() {
             </div>
           )}
 
-          {/* Action buttons */}
           {!isLoadingRecipe && recipeContent && (
             <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
               <Button
@@ -546,7 +514,6 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* Step 4: Schedule */}
       {currentStep === "schedule" && selectedMeal && (
         <div className="space-y-6">
           {saveSuccess ? (
@@ -559,7 +526,6 @@ export default function SearchPage() {
             </div>
           ) : (
             <>
-              {/* Selected meal summary */}
               <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
                 <div className="flex items-center gap-4">
                   <span className="text-3xl">{selectedMeal.emoji}</span>
@@ -570,7 +536,6 @@ export default function SearchPage() {
                 </div>
               </div>
 
-              {/* Date picker */}
               <div className="space-y-3">
                 <Label htmlFor="date">When do you want to make this?</Label>
                 <Input
@@ -583,7 +548,6 @@ export default function SearchPage() {
                 />
               </div>
 
-              {/* Meal type */}
               <div className="space-y-3">
                 <Label>Which meal?</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -606,7 +570,6 @@ export default function SearchPage() {
                 </div>
               </div>
 
-              {/* Save button */}
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button
                   onClick={handleSaveToCalendar}
@@ -637,7 +600,6 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* New Search Button (visible in all steps except search) */}
       {currentStep !== "search" && !saveSuccess && (
         <div className="mt-8 pt-4 border-t text-center">
           <Button variant="ghost" onClick={resetAll}>

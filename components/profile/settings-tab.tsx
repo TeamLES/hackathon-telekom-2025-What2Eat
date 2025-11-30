@@ -42,7 +42,6 @@ export function SettingsTab({
 }: Props) {
   return (
     <div className="space-y-6">
-      {/* AI Preferences */}
       <Card>
         <CardHeader>
           <CardTitle>🤖 AI Assistant Preferences</CardTitle>
@@ -292,7 +291,6 @@ export function SettingsTab({
         </CardContent>
       </Card>
 
-      {/* Notifications */}
       <Card>
         <CardHeader>
           <CardTitle>🔔 Notifications</CardTitle>

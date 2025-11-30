@@ -35,7 +35,6 @@ export function StepProfile() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Full Name */}
           <div className="space-y-2">
             <Label htmlFor="full_name">
               Full Name <span className="text-destructive">*</span>
@@ -54,7 +53,6 @@ export function StepProfile() {
             )}
           </div>
 
-          {/* Username */}
           <div className="space-y-2">
             <Label htmlFor="username">
               Username <span className="text-destructive">*</span>

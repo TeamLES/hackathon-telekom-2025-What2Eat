@@ -7,19 +7,16 @@ export default async function OnboardingPage() {
   const { isAuthenticated, hasCompletedOnboarding, userId } =
     await checkOnboardingStatus();
 
-  // Not logged in -> redirect to login
   if (!isAuthenticated || !userId) {
     redirect("/auth/login");
   }
 
-  // Already completed onboarding -> redirect to dashboard
   if (hasCompletedOnboarding) {
     redirect("/dashboard");
   }
 
   return (
     <main className="min-h-screen flex flex-col">
-      {/* Navigation */}
       <TopNav showActions={false} />
 
       <div className="flex-1 flex flex-col items-center py-8 px-4 mt-20">

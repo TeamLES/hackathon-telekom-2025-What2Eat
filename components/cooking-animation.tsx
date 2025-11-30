@@ -13,9 +13,7 @@ export function CookingAnimation({
 }: CookingAnimationProps) {
   return (
     <div className={cn("flex flex-col items-center justify-center py-12", className)}>
-      {/* Cooking pot animation container */}
       <div className="relative w-32 h-32 mb-6">
-        {/* Steam bubbles */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full flex justify-center gap-4">
           <div className="animate-steam-1">
             <div className="w-3 h-3 bg-gray-300/60 dark:bg-gray-500/40 rounded-full" />
@@ -28,23 +26,15 @@ export function CookingAnimation({
           </div>
         </div>
 
-        {/* Pot lid (animated bouncing) */}
         <div className="absolute top-8 left-1/2 -translate-x-1/2 animate-lid-bounce">
-          {/* Lid handle */}
           <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-3 bg-gray-600 dark:bg-gray-400 rounded-full" />
-          {/* Lid */}
           <div className="w-20 h-3 bg-gradient-to-b from-gray-400 to-gray-500 dark:from-gray-500 dark:to-gray-600 rounded-t-full shadow-md" />
         </div>
 
-        {/* Pot body */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-          {/* Pot rim */}
           <div className="w-24 h-3 bg-gradient-to-b from-orange-400 to-orange-500 rounded-t-md" />
-          {/* Pot main body */}
           <div className="w-24 h-14 bg-gradient-to-b from-orange-500 to-orange-600 rounded-b-2xl relative overflow-hidden">
-            {/* Pot shine */}
             <div className="absolute left-2 top-0 bottom-0 w-3 bg-orange-300/20 rounded-full" />
-            {/* Bubbling content */}
             <div className="absolute inset-x-2 top-1 h-4 bg-amber-300/40 rounded-full overflow-hidden">
               <div className="absolute inset-0 animate-bubble-1">
                 <div className="absolute left-2 top-1 w-2 h-2 bg-amber-200/60 rounded-full" />
@@ -57,12 +47,10 @@ export function CookingAnimation({
               </div>
             </div>
           </div>
-          {/* Pot handles */}
           <div className="absolute top-5 -left-3 w-4 h-6 bg-gradient-to-b from-orange-400 to-orange-600 rounded-l-full" />
           <div className="absolute top-5 -right-3 w-4 h-6 bg-gradient-to-b from-orange-400 to-orange-600 rounded-r-full" />
         </div>
 
-        {/* Flame underneath */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-0.5">
           <div className="w-3 h-6 bg-gradient-to-t from-orange-500 via-yellow-400 to-yellow-200 rounded-t-full animate-flame-1 origin-bottom" />
           <div className="w-4 h-8 bg-gradient-to-t from-orange-500 via-yellow-400 to-yellow-100 rounded-t-full animate-flame-2 origin-bottom" />
@@ -72,12 +60,10 @@ export function CookingAnimation({
         </div>
       </div>
 
-      {/* Message */}
       <p className="text-muted-foreground font-medium text-center animate-pulse">
         {message}
       </p>
 
-      {/* Styled component for animations */}
       <style jsx>{`
         @keyframes steam {
           0% {

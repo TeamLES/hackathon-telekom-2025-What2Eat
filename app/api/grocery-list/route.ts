@@ -12,7 +12,6 @@ export interface GroceryListRequest {
   }[];
 }
 
-// POST - Create new grocery list with items
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
@@ -25,7 +24,6 @@ export async function POST(req: NextRequest) {
     const body: GroceryListRequest = await req.json();
     const userId = authData.user.id;
 
-    // Create grocery list
     const { data: groceryList, error: listError } = await supabase
       .from("grocery_lists")
       .insert({
@@ -45,7 +43,6 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: "Failed to create grocery list" }, { status: 500 });
     }
 
-    // Insert items
     if (body.items.length > 0) {
       const itemsToInsert = body.items.map((item) => ({
         grocery_list_id: groceryList.id,
@@ -61,7 +58,6 @@ export async function POST(req: NextRequest) {
 
       if (itemsError) {
         console.error("Error inserting items:", itemsError);
-        // Don't fail the whole request, the list was created
       }
     }
 
@@ -76,7 +72,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET - Get user's active grocery lists
 export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient();
@@ -88,7 +83,6 @@ export async function GET(req: NextRequest) {
 
     const userId = authData.user.id;
 
-    // Get active grocery lists with items
     const { data: lists, error } = await supabase
       .from("grocery_lists")
       .select(`
@@ -122,7 +116,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// PATCH - Update item (toggle checked, update quantity, etc.)
 export async function PATCH(req: NextRequest) {
   try {
     const supabase = await createClient();
@@ -135,7 +128,6 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
 
     if (body.action === "toggle-item" && body.itemId) {
-      // Toggle checked status
       const { data: item, error: fetchError } = await supabase
         .from("grocery_list_items")
         .select("is_checked")

@@ -12,7 +12,6 @@ export async function GET() {
 
     const today = getLocalDateString();
 
-    // Get today's meal plan
     const { data: mealPlan } = await supabase
       .from("meal_plans")
       .select("id")
@@ -24,7 +23,6 @@ export async function GET() {
       return Response.json({ calories: 0, protein: 0, carbs: 0, fat: 0 });
     }
 
-    // Get all meal plan items with their recipes
     const { data: items } = await supabase
       .from("meal_plan_items")
       .select(`
@@ -42,10 +40,8 @@ export async function GET() {
       return Response.json({ calories: 0, protein: 0, carbs: 0, fat: 0 });
     }
 
-    // Sum up all nutrition values
     const totals = items.reduce(
       (acc, item) => {
-        // recipe can be an array due to Supabase join
         const recipeData = Array.isArray(item.recipe) ? item.recipe[0] : item.recipe;
         
         if (recipeData) {

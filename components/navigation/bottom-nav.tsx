@@ -46,10 +46,8 @@ export function BottomNav({ onPlusClick }: BottomNavProps) {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
       <div className="flex items-center justify-around h-16 px-2">
-        {/* Left nav items */}
         {leftNavItems.map(renderNavItem)}
 
-        {/* Plus button in the middle */}
         <button
           onClick={onPlusClick}
           className="relative -top-4 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-[hsl(var(--brand-orange))] to-[hsl(280,70%,50%)] text-white shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
@@ -70,7 +68,6 @@ export function BottomNav({ onPlusClick }: BottomNavProps) {
           </svg>
         </button>
 
-        {/* Right nav items */}
         {rightNavItems.map(renderNavItem)}
       </div>
     </nav>

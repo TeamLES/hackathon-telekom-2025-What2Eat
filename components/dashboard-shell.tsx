@@ -4,7 +4,6 @@ import { useState, createContext, useContext, useCallback } from "react";
 import { SuggestionWizard } from "@/components/suggestion-wizard";
 import { BottomNav, SidebarNav, TopNav } from "@/components/navigation";
 
-// Context to share wizard state
 type WizardContextType = {
   openWizard: (flow?: "what-to-cook" | "ingredients-needed") => void;
   nutritionRefreshKey: number;
@@ -68,13 +67,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
         </div>
 
         <div className="relative z-10">
-          {/* Mobile top nav */}
           <TopNav onPlusClick={handlePlusClick} />
 
-          {/* Desktop sidebar */}
           <SidebarNav />
 
-          {/* Main content */}
           <main className="pt-24 pb-24 md:pt-24 md:pb-4 md:ml-[calc(18rem+1rem)] transition-[margin]">
             <div className="px-4 pb-4 pt-0 md:px-6">
               <div className="mx-auto mt-4 max-w-5xl overflow-hidden rounded-[32px] border border-border/70 bg-card dark:bg-[#151515] shadow-[0_12px_35px_rgba(15,23,42,0.12)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.55)]">
@@ -85,16 +81,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
             </div>
           </main>
 
-          {/* Mobile bottom nav */}
           <BottomNav onPlusClick={handlePlusClick} />
 
-          {/* Suggestion wizard modal */}
           <SuggestionWizard
             isOpen={isWizardOpen}
             onClose={(didSaveRecipe?: boolean) => {
               setIsWizardOpen(false);
               setInitialFlow(undefined);
-              // Trigger nutrition refresh if a recipe was saved
               if (didSaveRecipe) {
                 triggerNutritionRefresh();
               }

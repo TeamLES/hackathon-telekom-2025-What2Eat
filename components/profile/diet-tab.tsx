@@ -54,7 +54,6 @@ export function DietTab({
 
   return (
     <div className="space-y-6">
-      {/* Favorite Cuisines */}
       <Card>
         <CardHeader>
           <CardTitle>🌍 Favorite Cuisines</CardTitle>
@@ -103,7 +102,6 @@ export function DietTab({
         </CardContent>
       </Card>
 
-      {/* Preferred Meal Types */}
       <Card>
         <CardHeader>
           <CardTitle>🍽️ Preferred Meal Types</CardTitle>
@@ -152,7 +150,6 @@ export function DietTab({
         </CardContent>
       </Card>
 
-      {/* Flavor Preferences */}
       <Card>
         <CardHeader>
           <CardTitle>😋 Flavor Preferences</CardTitle>
@@ -211,7 +208,6 @@ export function DietTab({
         </CardContent>
       </Card>
 
-      {/* Dietary Restrictions */}
       <Card>
         <CardHeader>
           <CardTitle>🚫 Dietary Restrictions & Allergies</CardTitle>
@@ -286,7 +282,6 @@ export function DietTab({
         </CardContent>
       </Card>
 
-      {/* Food Dislikes */}
       <Card>
         <CardHeader>
           <CardTitle>👎 Foods You Dislike</CardTitle>

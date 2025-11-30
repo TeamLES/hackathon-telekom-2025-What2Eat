@@ -3,7 +3,6 @@ import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 
-// Schema for meal plan generation
 const mealPlanSchema = z.object({
   days: z.array(
     z.object({
@@ -34,7 +33,6 @@ interface MealPlanRequest {
   includeLunch: boolean;
   includeDinner: boolean;
   includeSnacks: boolean;
-  // User preferences
   cuisines?: string[];
   restrictions?: string[];
   cookingSkill?: string;
@@ -164,7 +162,6 @@ For each meal, provide a brief but appetizing description, realistic cooking tim
     }
 
     if (mode === "generate-recipe") {
-      // Generate full recipe for a specific meal
       const { meal, mealType } = body as { meal: MealPlanMeal; mealType: string };
 
       const result = streamText({

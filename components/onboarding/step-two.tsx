@@ -94,7 +94,6 @@ export function StepTwo() {
         </p>
       </div>
 
-      {/* Favorite Cuisines */}
       <Card>
         <CardHeader>
           <CardTitle>
@@ -131,7 +130,6 @@ export function StepTwo() {
         </CardContent>
       </Card>
 
-      {/* Lifestyle */}
       <Card>
         <CardHeader>
           <CardTitle>Lifestyle (optional)</CardTitle>
@@ -204,7 +202,6 @@ export function StepTwo() {
         </CardContent>
       </Card>
 
-      {/* Dietary Restrictions */}
       {dietaryRestrictions.length > 0 && (
         <Card>
           <CardHeader>

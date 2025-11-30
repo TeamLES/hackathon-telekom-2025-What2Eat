@@ -17,7 +17,6 @@ export async function DELETE(request: NextRequest) {
       return Response.json({ error: "Missing item id" }, { status: 400 });
     }
 
-    // First verify the item belongs to the user
     const { data: mealPlanItem, error: fetchError } = await supabase
       .from("meal_plan_items")
       .select(`
@@ -34,13 +33,11 @@ export async function DELETE(request: NextRequest) {
       return Response.json({ error: "Meal not found" }, { status: 404 });
     }
 
-    // Check ownership
     const mealPlan = mealPlanItem.meal_plans as unknown as { user_id: string };
     if (mealPlan.user_id !== authData.user.id) {
       return Response.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    // Delete the meal plan item
     const { error: deleteError } = await supabase
       .from("meal_plan_items")
       .delete()

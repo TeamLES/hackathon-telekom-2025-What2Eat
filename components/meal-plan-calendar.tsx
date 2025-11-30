@@ -57,15 +57,12 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
   const [selectedMeal, setSelectedMeal] = useState<MealItem | null>(null);
   const [deletingMealId, setDeletingMealId] = useState<string | null>(null);
 
-  // Ingredients state for modal
   const [mealIngredients, setMealIngredients] = useState<Ingredient[]>([]);
   const [loadingIngredients, setLoadingIngredients] = useState(false);
   const [showIngredients, setShowIngredients] = useState(false);
 
-  // Owned ingredients from shopping lists (checked items)
   const [ownedIngredients, setOwnedIngredients] = useState<string[]>([]);
 
-  // Fetch owned ingredients on mount
   useEffect(() => {
     const fetchOwnedIngredients = async () => {
       try {
@@ -84,12 +81,10 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  // Get first day of month and total days
   const firstDayOfMonth = new Date(year, month, 1);
   const lastDayOfMonth = new Date(year, month + 1, 0);
   const daysInMonth = lastDayOfMonth.getDate();
 
-  // Get the day of week for first day (0 = Sunday, we want Monday = 0)
   let startDay = firstDayOfMonth.getDay() - 1;
   if (startDay < 0) startDay = 6;
 
@@ -139,7 +134,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
     setMealIngredients([]);
     setShowIngredients(false);
 
-    // Auto-load ingredients if meal has description
     if (meal.description) {
       setLoadingIngredients(true);
       try {
@@ -165,11 +159,10 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
     }
   };
 
-  // Delete a meal from the calendar
   const handleDeleteMeal = async (mealId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
 
-    if (deletingMealId) return; // Already deleting
+    if (deletingMealId) return;
 
     setDeletingMealId(mealId);
 
@@ -179,11 +172,9 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
       });
 
       if (response.ok) {
-        // Close modal if open
         if (selectedMeal?.id === mealId) {
           setSelectedMeal(null);
         }
-        // Notify parent to refresh data
         onMealDeleted?.();
       } else {
         console.error("Failed to delete meal");
@@ -195,7 +186,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
     }
   };
 
-  // Save ingredients to shopping list
   const saveToShoppingList = async (ingredients: Ingredient[]) => {
     const response = await fetch("/api/grocery-list", {
       method: "POST",
@@ -214,7 +204,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
       throw new Error("Failed to save");
     }
 
-    // Refresh owned ingredients after saving
     const ownedResponse = await fetch("/api/owned-ingredients");
     if (ownedResponse.ok) {
       const data = await ownedResponse.json();
@@ -222,7 +211,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
     }
   };
 
-  // Generate calendar grid
   const calendarDays = [];
   for (let i = 0; i < startDay; i++) {
     calendarDays.push(null);
@@ -237,7 +225,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
 
   return (
     <div className="space-y-4">
-      {/* Meal Detail Modal */}
       {selectedMeal && (
         <div
           className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
@@ -247,7 +234,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
             className="w-full max-w-2xl max-h-[90vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div className="flex-shrink-0 bg-background p-4 border-b flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{MEAL_TYPE_EMOJI[selectedMeal.type] || "🍽️"}</span>
@@ -261,10 +247,8 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
               </Button>
             </div>
 
-            {/* Scrollable Content */}
             <div className="overflow-y-auto">
               <div className="p-4 space-y-4">
-                {/* Stats */}
                 <div className="flex flex-wrap gap-4">
                   {selectedMeal.cookTime && (
                     <div className="flex items-center gap-2 text-sm">
@@ -298,7 +282,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
                   )}
                 </div>
 
-                {/* Difficulty */}
                 {selectedMeal.difficulty && DIFFICULTY_LABELS[selectedMeal.difficulty] && (
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">Difficulty:</span>
@@ -308,7 +291,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
                   </div>
                 )}
 
-                {/* Ingredients Section - Show at top */}
                 {selectedMeal.description && (
                   <div className="pt-4 border-t">
                     {loadingIngredients ? (
@@ -331,7 +313,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
                   </div>
                 )}
 
-                {/* Description/Recipe */}
                 {selectedMeal.description && (
                   <div className="pt-4 border-t">
                     <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -340,7 +321,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
                   </div>
                 )}
 
-                {/* No description fallback */}
                 {!selectedMeal.description && (
                   <div className="pt-4 border-t">
                     <p className="text-sm text-muted-foreground italic">
@@ -351,7 +331,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
               </div>
             </div>
 
-            {/* Footer */}
             <div className="flex-shrink-0 p-4 border-t bg-background flex gap-2">
               <Button
                 variant="outline"
@@ -376,12 +355,9 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
         </div>
       )}
 
-      {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* Left: Compact Calendar */}
         <Card className="lg:col-span-2">
           <CardContent className="p-3">
-            {/* Calendar Header */}
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold">
                 {MONTHS[month]} {year}
@@ -399,7 +375,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
               </div>
             </div>
 
-            {/* Day headers */}
             <div className="grid grid-cols-7 gap-0.5 mb-1">
               {DAYS.map((day, i) => (
                 <div
@@ -412,7 +387,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
               ))}
             </div>
 
-            {/* Calendar days - Compact */}
             <div className="grid grid-cols-7 gap-0.5">
               {calendarDays.map((day, index) => {
                 if (day === null) {
@@ -455,7 +429,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
               })}
             </div>
 
-            {/* Legend */}
             <div className="flex items-center justify-center gap-4 mt-3 pt-3 border-t text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full bg-primary" />
@@ -469,7 +442,6 @@ export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendar
           </CardContent>
         </Card>
 
-        {/* Right: Selected Day Meals */}
         <Card className="lg:col-span-3">
           <CardContent className="p-4">
             {selectedDate ? (

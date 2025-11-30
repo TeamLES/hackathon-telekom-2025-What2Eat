@@ -53,10 +53,8 @@ export function UserDropdown({ email }: { email: string }) {
     router.push("/auth/login");
   };
 
-  // Display name: prefer username, then full_name, then email
   const displayName = profile?.username || profile?.full_name || email;
 
-  // Get initials for avatar
   const getInitials = () => {
     if (profile?.full_name) {
       const names = profile.full_name.split(" ");
@@ -85,7 +83,6 @@ export function UserDropdown({ email }: { email: string }) {
           className="flex items-center gap-2 rounded-full border px-3 py-2 hover:bg-accent"
           size="lg"
         >
-          {/* Avatar */}
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">
             {profile?.avatar_url ? (
               <img
@@ -102,7 +99,6 @@ export function UserDropdown({ email }: { email: string }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        {/* User info header */}
         <DropdownMenuLabel className="font-normal">
           <div className="flex items-center gap-3 py-1">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">

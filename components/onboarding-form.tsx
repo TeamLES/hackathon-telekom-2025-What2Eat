@@ -13,7 +13,6 @@ import { StepOne } from "./onboarding/step-one";
 import { StepTwo } from "./onboarding/step-two";
 import { StepThree } from "./onboarding/step-three";
 
-// Types from database
 type GenderType = Database["public"]["Enums"]["gender_type"];
 type ActivityLevelType = Database["public"]["Enums"]["activity_level_type"];
 type GoalType = Database["public"]["Enums"]["goal_type"];
@@ -22,13 +21,10 @@ type CookingSkillLevel = Database["public"]["Enums"]["cooking_skill_level"];
 type AiToneType = Database["public"]["Enums"]["ai_tone_type"];
 type FocusPriorityType = Database["public"]["Enums"]["focus_priority_type"];
 
-// Zod schema for form validation
 export const onboardingSchema = z.object({
-  // Step 1: Profile Info (Required)
   full_name: z.string().min(2, "Name must be at least 2 characters"),
   username: z.string().min(3, "Username must be at least 3 characters").regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"),
 
-  // Step 2: Basic Info + Eating Preferences (Required)
   gender: z.enum(["male", "female", "other", "prefer_not_to_say"]),
   age: z.number().min(1).max(120),
   height_cm: z.number().min(50).max(300),
@@ -56,7 +52,6 @@ export const onboardingSchema = z.object({
   budget_level: z.enum(["low", "medium", "high", "no_preference"]),
   cooking_skill: z.enum(["beginner", "intermediate", "advanced"]),
 
-  // Step 3: Cuisines (Required) + Lifestyle & Dietary Restrictions (Optional)
   favorite_cuisines: z
     .array(z.number())
     .min(1, "Please select at least one favorite cuisine"),
@@ -66,7 +61,6 @@ export const onboardingSchema = z.object({
   snacks_often: z.boolean().optional(),
   dietary_restrictions: z.array(z.number()).optional(),
 
-  // Step 4: Kitchen Equipment & AI Preferences (Optional)
   kitchen_equipment: z.array(z.number()).optional(),
   ai_tone: z.enum(["friendly", "expert", "minimal"]).optional(),
   focus_priorities: z
@@ -154,7 +148,6 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
     setError(null);
 
     try {
-      // 0. Update profiles table with full_name and username
       const { error: profileUpdateError } = await supabase
         .from("profiles")
         .update({
@@ -165,12 +158,10 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
 
       if (profileUpdateError) throw profileUpdateError;
 
-      // Use provided macro targets or calculate defaults
       const proteinTarget = data.protein_target_g ?? Math.round(data.weight_kg * 2);
       const fatTarget = data.fat_target_g ?? Math.round((data.calorie_target * 0.25) / 9);
       const carbsTarget = data.carbs_target_g ?? Math.round((data.calorie_target - proteinTarget * 4 - fatTarget * 9) / 4);
 
-      // 1. Upsert nutrition_profiles
       const { error: profileError } = await supabase
         .from("nutrition_profiles")
         .upsert({
@@ -196,7 +187,6 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
 
       if (profileError) throw profileError;
 
-      // 2. Handle user_favorite_cuisines
       await supabase
         .from("user_favorite_cuisines")
         .delete()
@@ -213,7 +203,6 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
         if (cuisineError) throw cuisineError;
       }
 
-      // 3. Handle user_dietary_restrictions
       await supabase
         .from("user_dietary_restrictions")
         .delete()
@@ -232,7 +221,6 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
         if (restrictionError) throw restrictionError;
       }
 
-      // 4. Handle user_kitchen_equipment
       await supabase
         .from("user_kitchen_equipment")
         .delete()
@@ -249,7 +237,6 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
         if (equipmentError) throw equipmentError;
       }
 
-      // 5. Optionally upsert user_preferences
       if (
         data.ai_tone ||
         (data.focus_priorities && data.focus_priorities.length > 0)
@@ -267,7 +254,6 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
         if (preferencesError) throw preferencesError;
       }
 
-      // Redirect to dashboard
       router.push("/dashboard");
       router.refresh();
     } catch (err) {
@@ -296,7 +282,6 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        {/* Progress Indicator */}
         <div className="flex items-center justify-center gap-2 mb-8">
           {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((step) => (
             <div key={step} className="flex items-center">
@@ -320,17 +305,14 @@ export function OnboardingForm({ userId }: OnboardingFormProps) {
           ))}
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md">
             {error}
           </div>
         )}
 
-        {/* Step Content */}
         {renderStep()}
 
-        {/* Navigation Buttons */}
         <div className="flex justify-between pt-4">
           <Button
             type="button"

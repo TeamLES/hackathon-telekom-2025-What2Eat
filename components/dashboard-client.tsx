@@ -22,7 +22,6 @@ interface DashboardClientProps {
   firstName?: string | null;
 }
 
-// Circular progress component
 function CircularProgress({
   consumed,
   target,
@@ -47,7 +46,6 @@ function CircularProgress({
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Detect mobile screen
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
     checkMobile();
@@ -64,7 +62,6 @@ function CircularProgress({
   const circumference = radius * 2 * Math.PI;
   const strokeDashoffset = circumference - (animatedPercentage / 100) * circumference;
 
-  // Animate on mount and when values change
   useEffect(() => {
     const timer = setTimeout(() => {
       setAnimatedPercentage(percentage);
@@ -75,7 +72,6 @@ function CircularProgress({
   return (
     <div className="flex flex-col items-center">
       <div className="relative" style={{ width: actualSize, height: actualSize }}>
-        {/* Background circle */}
         <svg className="w-full h-full -rotate-90">
           <circle
             cx={actualSize / 2}
@@ -86,7 +82,6 @@ function CircularProgress({
             strokeWidth={actualStrokeWidth}
             className="text-muted/30"
           />
-          {/* Progress circle */}
           <circle
             cx={actualSize / 2}
             cy={actualSize / 2}
@@ -104,7 +99,6 @@ function CircularProgress({
             }}
           />
         </svg>
-        {/* Center text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className={cn(
             "text-lg font-bold leading-none",
@@ -130,7 +124,6 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
   );
   const [shoppingListKey, setShoppingListKey] = useState(0);
 
-  // Calculate macros if profile exists
   const proteinTarget = profile?.weight_kg ? Math.round(profile.weight_kg * 1.6) : 0;
   const fatTarget = profile?.weight_kg ? Math.round(profile.weight_kg * 1) : 0;
   const proteinCalories = proteinTarget * 4;
@@ -138,10 +131,8 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
   const remainingCalories = profile?.calorie_target ? profile.calorie_target - proteinCalories - fatCalories : 0;
   const carbsTarget = remainingCalories > 0 ? Math.round(remainingCalories / 4) : 0;
 
-  // Refresh nutrition and shopping list when nutritionRefreshKey changes
   useEffect(() => {
     if (nutritionRefreshKey > 0) {
-      // Fetch updated nutrition data
       fetch("/api/today-nutrition")
         .then(res => res.json())
         .then(data => {
@@ -151,12 +142,10 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
         })
         .catch(console.error);
 
-      // Also refresh shopping list
       setShoppingListKey(prev => prev + 1);
     }
   }, [nutritionRefreshKey]);
 
-  // Also update when todayNutrition prop changes
   useEffect(() => {
     if (todayNutrition) {
       setNutrition(todayNutrition);
@@ -165,7 +154,6 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
 
   return (
     <div className="space-y-6">
-      {/* Welcome */}
       <div>
         <h1 className="text-2xl font-bold">
           Welcome back{firstName ? `, ${firstName}` : ""}! 👋
@@ -175,7 +163,6 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
         </p>
       </div>
 
-      {/* Nutrition circles */}
       {profile && (
         <Card>
           <CardHeader className="pb-6">
@@ -237,7 +224,6 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
         </Card>
       )}
 
-      {/* Quick actions */}
       <div>
         <h2 className="text-lg font-semibold mb-4">What do you need?</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -272,10 +258,8 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
         </div>
       </div>
 
-      {/* Shopping List */}
       <ShoppingList key={shoppingListKey} />
 
-      {/* Tips */}
       <Card className="bg-gradient-to-r from-[hsl(var(--brand-orange))]/10 to-[hsl(280,70%,50%)]/10">
         <CardHeader>
           <CardTitle className="text-lg">💡 Tip of the day</CardTitle>

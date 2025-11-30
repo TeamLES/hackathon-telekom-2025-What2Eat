@@ -46,7 +46,6 @@ type Cuisine = Database["public"]["Tables"]["cuisines"]["Row"];
 type DietaryRestriction = Database["public"]["Tables"]["dietary_restrictions"]["Row"];
 type KitchenEquipment = Database["public"]["Tables"]["kitchen_equipment"]["Row"];
 
-// Spicy level options
 const SPICY_LEVELS = [
   { value: "none", label: "No spice", icon: "🚫" },
   { value: "mild", label: "Mild", icon: "🌶️" },
@@ -54,7 +53,6 @@ const SPICY_LEVELS = [
   { value: "hot", label: "Hot", icon: "🌶️🌶️🌶️" },
 ] as const;
 
-// Quick preference tags
 const QUICK_PREFERENCES = [
   { value: "healthy", label: "Healthy", icon: "🥗" },
   { value: "quick", label: "Quick & Easy", icon: "⚡" },
@@ -64,7 +62,6 @@ const QUICK_PREFERENCES = [
   { value: "sweet", label: "Sweet", icon: "🍰" },
 ] as const;
 
-// Step definitions
 const STEPS = {
   initial: 0,
   ingredientSource: 1,
@@ -91,7 +88,6 @@ export function SuggestionWizard({
     useState<IngredientSource>(null);
   const [currentStep, setCurrentStep] = useState<StepType>(STEPS.initial);
 
-  // Database data
   const [cuisines, setCuisines] = useState<Cuisine[]>([]);
   const [dietaryRestrictions, setDietaryRestrictions] = useState<
     DietaryRestriction[]
@@ -102,7 +98,6 @@ export function SuggestionWizard({
   const [flavorProfiles, setFlavorProfiles] = useState<{ id: number; label: string }[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
-  // User profile data for AI personalization
   type UserProfileData = {
     cookingSkill?: string | null;
     calorieTarget?: number | null;
@@ -120,7 +115,6 @@ export function SuggestionWizard({
   };
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
 
-  // Form data
   const [ingredients, setIngredients] = useState("");
 
   const [cookingTime, setCookingTime] = useState(30);
@@ -131,7 +125,6 @@ export function SuggestionWizard({
   const [portions, setPortions] = useState(1);
   const [mealName, setMealName] = useState("");
 
-  // Preference selections
   const [selectedCuisines, setSelectedCuisines] = useState<number[]>([]);
   const [selectedRestrictions, setSelectedRestrictions] = useState<number[]>(
     []
@@ -140,20 +133,17 @@ export function SuggestionWizard({
   const [spicyLevel, setSpicyLevel] = useState<string>("none");
   const [quickPreferences, setQuickPreferences] = useState<string[]>([]);
 
-  // Camera and image state
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // AI state
   const [completion, setCompletion] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiError, setAiError] = useState<Error | null>(null);
   const abortControllerRef = { current: null as AbortController | null };
 
-  // Meal suggestions (structured data from AI)
   type MealSuggestion = {
     name: string;
     description: string;
@@ -165,19 +155,15 @@ export function SuggestionWizard({
   const [selectedSuggestion, setSelectedSuggestion] = useState<MealSuggestion | null>(null);
   const [previouslyShownMeals, setPreviouslyShownMeals] = useState<string[]>([]);
 
-  // Ingredients from "ingredients-needed" flow - use shared Ingredient type
   const [parsedIngredients, setParsedIngredients] = useState<Ingredient[]>([]);
   const [selectedIngredientIndices, setSelectedIngredientIndices] = useState<Set<number>>(new Set());
-  // Store user's owned ingredients from the ingredients step
   const [userOwnedIngredients, setUserOwnedIngredients] = useState<string[]>([]);
   const [isSavingToList, setIsSavingToList] = useState(false);
   const [savedToList, setSavedToList] = useState(false);
 
-  // Saving recipe state
   const [isSaving, startSaveTransition] = useTransition();
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // File input ref
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const stopGeneration = () => {
@@ -187,7 +173,6 @@ export function SuggestionWizard({
     }
   };
 
-  // Fetch structured meal suggestions (JSON)
   const fetchMealSuggestions = async (requestBody: Record<string, unknown>, excludeMeals: string[] = []) => {
     setIsAiLoading(true);
     setMealSuggestions([]);
@@ -209,7 +194,6 @@ export function SuggestionWizard({
       const suggestions = data.suggestions || [];
       setMealSuggestions(suggestions);
 
-      // Track these meal names for future "Get Different Suggestions" requests
       if (suggestions.length > 0) {
         const newMealNames = suggestions.map((s: MealSuggestion) => s.name);
         setPreviouslyShownMeals(prev => [...prev, ...newMealNames]);
@@ -222,7 +206,6 @@ export function SuggestionWizard({
     }
   };
 
-  // Fetch full recipe (streamed)
   const fetchFullRecipe = async (requestBody: Record<string, unknown>) => {
     setIsAiLoading(true);
     setCompletion("");
@@ -268,7 +251,6 @@ export function SuggestionWizard({
     }
   };
 
-  // Fetch recipe with parsed ingredients (for "ingredients-needed" flow)
   const fetchRecipeWithIngredients = async (mealName: string, portions: number) => {
     setIsAiLoading(true);
     setCompletion("");
@@ -295,13 +277,11 @@ export function SuggestionWizard({
 
       const data = await response.json();
 
-      // Parse ingredients from API response and select all by default
       if (data.ingredients) {
         setParsedIngredients(data.ingredients);
         setSelectedIngredientIndices(new Set(data.ingredients.map((_: unknown, i: number) => i)));
       }
 
-      // Build markdown recipe from structured data
       if (data.recipe) {
         const recipe = data.recipe;
         let markdown = `# ${recipe.name}\n\n`;
@@ -315,7 +295,6 @@ export function SuggestionWizard({
           markdown += `| ${recipe.calories || '-'} kcal | ${recipe.protein || '-'}g | ${recipe.carbs || '-'}g | ${recipe.fat || '-'}g |\n\n`;
         }
 
-        // Note: Ingredients are shown in the selectable list above, not duplicated here
         markdown += `## 👨‍🍳 Instructions\n\n`;
         markdown += recipe.instructions;
 
@@ -329,7 +308,6 @@ export function SuggestionWizard({
     }
   };
 
-  // Save ingredients to shopping list - called by IngredientChecklist component
   const handleSaveToShoppingList = async (selectedIngredients: Ingredient[]) => {
     setIsSavingToList(true);
     try {
@@ -359,17 +337,14 @@ export function SuggestionWizard({
     }
   };
 
-  // Load data from database
   useEffect(() => {
     async function loadData() {
       if (!isOpen) return;
 
       setIsLoadingData(true);
       try {
-        // Get current user
         const { data: { user } } = await supabase.auth.getUser();
 
-        // Load reference data first
         const [cuisinesRes, restrictionsRes, equipmentRes, flavorProfilesRes] = await Promise.all([
           supabase.from("cuisines").select("*").order("name"),
           supabase.from("dietary_restrictions").select("*").order("label"),
@@ -382,7 +357,6 @@ export function SuggestionWizard({
         if (equipmentRes.data) setKitchenEquipment(equipmentRes.data);
         if (flavorProfilesRes.data) setFlavorProfiles(flavorProfilesRes.data);
 
-        // Load user profile data if user is logged in
         if (user) {
           const [nutritionRes, userRestrictionsRes, userEquipmentRes, userCuisinesRes, userDislikesRes, userFlavorRes] = await Promise.all([
             supabase.from("nutrition_profiles").select("cooking_skill, calorie_target, protein_target_g, carbs_target_g, fat_target_g, primary_goal, budget_level, other_allergy_notes").eq("user_id", user.id).single(),
@@ -398,7 +372,6 @@ export function SuggestionWizard({
           const savedCuisineIds = userCuisinesRes.data?.map((c: { cuisine_id: number }) => c.cuisine_id) || [];
           const savedFlavorIds = userFlavorRes.data?.map((f: { flavor_id: number }) => f.flavor_id) || [];
 
-          // Auto-populate selections from user profile
           if (savedRestrictionIds.length > 0) {
             setSelectedRestrictions(savedRestrictionIds);
           }
@@ -409,7 +382,6 @@ export function SuggestionWizard({
             setSelectedCuisines(savedCuisineIds);
           }
 
-          // Resolve flavor names from IDs
           const flavorNames = savedFlavorIds
             .map((id: number) => flavorProfilesRes.data?.find((f: { id: number; label: string }) => f.id === id)?.label)
             .filter(Boolean) as string[];
@@ -440,12 +412,10 @@ export function SuggestionWizard({
     loadData();
   }, [isOpen, supabase]);
 
-  // Handle initial flow when wizard opens
   useEffect(() => {
     if (isOpen && initialFlow) {
       setFlowType(initialFlow);
       if (initialFlow === "what-to-cook") {
-        // Go directly to ingredients step (skip ingredientSource)
         setCurrentStep(STEPS.ingredients);
       } else if (initialFlow === "ingredients-needed") {
         setCurrentStep(STEPS.portions);
@@ -463,13 +433,11 @@ export function SuggestionWizard({
     setExtraInfo("");
     setPortions(1);
     setMealName("");
-    // Reset preference selections
     setSelectedCuisines([]);
     setSelectedRestrictions([]);
     setSelectedEquipment([]);
     setSpicyLevel("none");
     setQuickPreferences([]);
-    // Reset AI state
     setCompletion("");
     setAiError(null);
     setMealSuggestions([]);
@@ -482,14 +450,12 @@ export function SuggestionWizard({
     setIsSavingToList(false);
     setSavedToList(false);
     stopGeneration();
-    // Reset camera state
     stopCamera();
     setCapturedImage(null);
     setUploadError(null);
     setIsUploading(false);
   };
 
-  // Toggle functions for selections
   const toggleCuisine = (id: number) => {
     setSelectedCuisines((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -514,15 +480,12 @@ export function SuggestionWizard({
     );
   };
 
-  // Save recipe and close
   const handleSaveAndClose = () => {
-    // Only save if we have a recipe to save
     if (!completion) {
       handleClose();
       return;
     }
 
-    // Build the meal object to save
     const mealToSave = selectedSuggestion
       ? {
         name: selectedSuggestion.name,
@@ -531,7 +494,6 @@ export function SuggestionWizard({
         difficulty: selectedSuggestion.difficulty,
       }
       : {
-        // For "ingredients-needed" flow, use the meal name they entered
         name: mealName || "AI Generated Recipe",
         description: "",
         estimatedTime: undefined,
@@ -539,7 +501,6 @@ export function SuggestionWizard({
       };
 
     startSaveTransition(async () => {
-      // Also save selected ingredients to shopping list if any are selected
       if (selectedIngredientIndices.size > 0 && !savedToList) {
         const selectedIngredients = parsedIngredients.filter((_, i) => selectedIngredientIndices.has(i));
         try {
@@ -560,25 +521,22 @@ export function SuggestionWizard({
         }
       }
 
-      // Pass mealType to save to the correct meal plan slot
       const result = await saveAiRecipeAction(
         mealToSave,
         completion,
-        mealType, // breakfast, lunch, dinner, or snack
-        undefined // planDate - defaults to today
+        mealType, 
+        undefined 
       );
 
       if ("error" in result) {
         console.error("Failed to save recipe:", result.error);
-        // Still close even if save fails
         handleClose();
         return;
       }
 
       setSaveSuccess(true);
-      // Brief delay to show success state, then close with refresh signal
       setTimeout(() => {
-        handleClose(true); // true = did save recipe, trigger refresh
+        handleClose(true); 
       }, 500);
     });
   };
@@ -591,7 +549,6 @@ export function SuggestionWizard({
   const handleFlowSelect = (flow: FlowType) => {
     setFlowType(flow);
     if (flow === "what-to-cook") {
-      // Go directly to ingredients step (skip ingredientSource)
       setCurrentStep(STEPS.ingredients);
     } else if (flow === "ingredients-needed") {
       setCurrentStep(STEPS.portions);
@@ -601,7 +558,6 @@ export function SuggestionWizard({
   const handleIngredientSourceSelect = (source: IngredientSource) => {
     setIngredientSource(source);
     if (source === "go-shopping") {
-      // Skip ingredients step, go directly to preferences
       setCurrentStep(STEPS.preferences);
     } else {
       setCurrentStep(STEPS.ingredients);
@@ -610,7 +566,6 @@ export function SuggestionWizard({
 
   const handleNext = () => {
     if (currentStep === STEPS.ingredients) {
-      // Save user's ingredients for later comparison
       const ownedList = ingredients
         .split(",")
         .map((s) => s.trim().toLowerCase())
@@ -620,7 +575,6 @@ export function SuggestionWizard({
     } else if (currentStep === STEPS.preferences) {
       setCurrentStep(STEPS.details);
     } else if (currentStep === STEPS.details) {
-      // Submit and close
       handleSubmit();
     }
   };
@@ -630,11 +584,9 @@ export function SuggestionWizard({
       setCurrentStep(STEPS.initial);
       setFlowType(null);
     } else if (currentStep === STEPS.ingredients) {
-      // Go back to initial step
       setCurrentStep(STEPS.initial);
       setFlowType(null);
     } else if (currentStep === STEPS.preferences) {
-      // Always go back to ingredients
       setCurrentStep(STEPS.ingredients);
     } else if (currentStep === STEPS.details) {
       setCurrentStep(STEPS.preferences);
@@ -642,7 +594,6 @@ export function SuggestionWizard({
       setCurrentStep(STEPS.initial);
       setFlowType(null);
     } else if (currentStep === STEPS.aiResults) {
-      // Stop AI generation if running and go back
       stopGeneration();
       if (flowType === "what-to-cook") {
         setCurrentStep(STEPS.details);
@@ -653,37 +604,29 @@ export function SuggestionWizard({
   };
 
   const handleSubmit = async () => {
-    // Move to AI results step
     setCurrentStep(STEPS.aiResults);
 
-    // Different flow based on what user is looking for
     if (flowType === "what-to-cook") {
-      // Build request body with resolved names from IDs
       const requestBody = {
         flowType: flowType as "what-to-cook" | "ingredients-needed",
         ingredientSource,
         ingredients,
-        // Resolve cuisine names from IDs
         selectedCuisines: selectedCuisines
           .map((id) => cuisines.find((c) => c.id === id)?.name)
           .filter(Boolean) as string[],
-        // Resolve restriction labels from IDs
         selectedRestrictions: selectedRestrictions
           .map((id) => dietaryRestrictions.find((r) => r.id === id)?.label)
           .filter(Boolean) as string[],
-        // Resolve equipment labels from IDs
         selectedEquipment: selectedEquipment
           .map((id) => kitchenEquipment.find((e) => e.id === id)?.label)
           .filter(Boolean) as string[],
         spicyLevel,
         quickPreferences,
-        // Details
         cookingTime,
         mealType,
         extraInfo,
         portions,
         mealName,
-        // User profile for AI personalization
         userProfile: userProfile ? {
           cookingSkill: userProfile.cookingSkill,
           calorieTarget: userProfile.calorieTarget,
@@ -697,15 +640,12 @@ export function SuggestionWizard({
           flavorPreferences: userProfile.flavorPreferences,
         } : undefined,
       };
-      // Get structured suggestions first, excluding previously shown meals
       await fetchMealSuggestions(requestBody, previouslyShownMeals);
     } else {
-      // "ingredients-needed" flow - get recipe with parsed ingredients
       await fetchRecipeWithIngredients(mealName, portions);
     }
   };
 
-  // Handle when user selects a meal suggestion
   const handleSelectMeal = async (meal: typeof mealSuggestions[0]) => {
     setSelectedSuggestion(meal);
     setIsAiLoading(true);
@@ -714,7 +654,6 @@ export function SuggestionWizard({
     setAiError(null);
 
     try {
-      // Call recipe-ingredients API to get structured ingredients
       const response = await fetch("/api/recipe-ingredients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -731,7 +670,6 @@ export function SuggestionWizard({
             .map((id) => kitchenEquipment.find((e) => e.id === id)?.label)
             .filter(Boolean) as string[],
           spicyLevel,
-          // User profile for AI personalization
           userProfile: userProfile ? {
             cookingSkill: userProfile.cookingSkill,
             foodDislikes: userProfile.foodDislikes,
@@ -746,7 +684,6 @@ export function SuggestionWizard({
 
       const data = await response.json();
 
-      // Parse ingredients and mark which ones user already has
       if (data.ingredients) {
         const ingredientsWithOwnership = data.ingredients.map((ing: Ingredient) => {
           const userHasIt = userOwnedIngredients.some((owned) =>
@@ -756,14 +693,12 @@ export function SuggestionWizard({
         });
         setParsedIngredients(ingredientsWithOwnership);
 
-        // Only pre-select ingredients the user DOESN'T have (needs to buy)
         const indicesToSelect = ingredientsWithOwnership
           .map((ing: Ingredient, i: number) => (!ing.userHasIt ? i : -1))
           .filter((i: number) => i !== -1);
         setSelectedIngredientIndices(new Set(indicesToSelect));
       }
 
-      // Build markdown recipe from structured data
       if (data.recipe) {
         const recipe = data.recipe;
         let markdown = `# ${recipe.name}\n\n`;
@@ -791,7 +726,7 @@ export function SuggestionWizard({
   };
 
   const startCamera = async () => {
-    stopCamera(); // Stop any existing stream
+    stopCamera(); 
     setCapturedImage(null);
     setUploadError(null);
     try {
@@ -821,7 +756,7 @@ export function SuggestionWizard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           image: imageDataUrl,
-          saveToStorage: true, // Save to Supabase storage and database
+          saveToStorage: true,
         }),
       });
 
@@ -831,7 +766,6 @@ export function SuggestionWizard({
         throw new Error(data.error || "Failed to analyze image.");
       }
 
-      // Prepend new ingredients to existing ones, avoiding duplicates
       const existingIngredients = ingredients
         .split(",")
         .map((s) => s.trim().toLowerCase())
@@ -880,13 +814,11 @@ export function SuggestionWizard({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       setUploadError('Please select an image file');
       return;
     }
 
-    // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       setUploadError('Image must be smaller than 10MB');
       return;
@@ -921,10 +853,8 @@ export function SuggestionWizard({
         className="fixed inset-0 md:inset-4 md:m-auto md:max-w-2xl md:h-fit md:max-h-[90vh] bg-background md:rounded-xl md:border md:shadow-lg overflow-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Hidden canvas for capturing photo */}
         <canvas ref={canvasRef} className="hidden" />
 
-        {/* Camera Modal */}
         {isCameraOpen && (
           <div className="absolute inset-0 z-20 bg-black flex flex-col">
             <video
@@ -940,7 +870,6 @@ export function SuggestionWizard({
           </div>
         )}
 
-        {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-background">
           <div className="flex items-center gap-2">
             {currentStep > STEPS.initial && (
@@ -967,9 +896,7 @@ export function SuggestionWizard({
           </Button>
         </div>
 
-        {/* Content */}
         <div className="p-4 md:p-6">
-          {/* Step 0: Initial choice */}
           {currentStep === STEPS.initial && (
             <div className="space-y-4">
               <p className="text-muted-foreground text-center mb-6">
@@ -1008,7 +935,6 @@ export function SuggestionWizard({
             </div>
           )}
 
-          {/* Step 2: Ingredients */}
           {currentStep === STEPS.ingredients && (
             <div className="space-y-6">
               <div className="bg-muted/50 rounded-lg p-4">
@@ -1021,7 +947,6 @@ export function SuggestionWizard({
               </div>
 
               <div className="space-y-4">
-                {/* Image Preview & Uploading State */}
                 {capturedImage && (
                   <div className="relative group">
                     <img src={capturedImage} alt="Captured ingredients" className="rounded-lg w-full" />
@@ -1045,7 +970,6 @@ export function SuggestionWizard({
                   </div>
                 )}
 
-                {/* Upload Buttons */}
                 {!capturedImage && (
                   <div className="flex gap-2">
                     <Button variant="outline" className="flex-1" onClick={startCamera}>
@@ -1096,7 +1020,6 @@ export function SuggestionWizard({
             </div>
           )}
 
-          {/* Step 3: Preferences */}
           {currentStep === STEPS.preferences && (
             <div className="space-y-6">
               <div className="bg-muted/50 rounded-lg p-4">
@@ -1112,7 +1035,6 @@ export function SuggestionWizard({
                 </div>
               ) : (
                 <>
-                  {/* Quick Preferences */}
                   <div className="space-y-3">
                     <Label className="text-sm font-medium">What are you in the mood for?</Label>
                     <div className="flex flex-wrap gap-2">
@@ -1135,7 +1057,6 @@ export function SuggestionWizard({
                     </div>
                   </div>
 
-                  {/* Spicy Level */}
                   <div className="space-y-3">
                     <Label className="text-sm font-medium flex items-center gap-2">
                       <Flame className="w-4 h-4 text-orange-500" />
@@ -1161,7 +1082,6 @@ export function SuggestionWizard({
                     </div>
                   </div>
 
-                  {/* Cuisines */}
                   <div className="space-y-3">
                     <Label className="text-sm font-medium">Preferred cuisines (optional)</Label>
                     <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
@@ -1183,7 +1103,6 @@ export function SuggestionWizard({
                     </div>
                   </div>
 
-                  {/* Dietary Restrictions */}
                   <div className="space-y-3">
                     <Label className="text-sm font-medium flex items-center gap-2">
                       <Leaf className="w-4 h-4 text-green-500" />
@@ -1208,7 +1127,6 @@ export function SuggestionWizard({
                     </div>
                   </div>
 
-                  {/* Kitchen Equipment */}
                   <div className="space-y-3">
                     <Label className="text-sm font-medium">What can you use?</Label>
                     <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
@@ -1241,10 +1159,8 @@ export function SuggestionWizard({
             </div>
           )}
 
-          {/* Step 4: Details */}
           {currentStep === STEPS.details && (
             <div className="space-y-6">
-              {/* Cooking time */}
               <div className="space-y-3">
                 <Label>Max cooking time</Label>
                 <div className="flex items-center gap-4">
@@ -1263,7 +1179,6 @@ export function SuggestionWizard({
                 <p className="text-center font-medium">{cookingTime} minutes</p>
               </div>
 
-              {/* Meal type */}
               <div className="space-y-3">
                 <Label>Type of meal</Label>
                 <div className="grid grid-cols-4 gap-2">
@@ -1285,7 +1200,6 @@ export function SuggestionWizard({
                 </div>
               </div>
 
-              {/* Extra information */}
               <div className="space-y-3">
                 <Label>Extra information (optional)</Label>
                 <Textarea
@@ -1302,7 +1216,6 @@ export function SuggestionWizard({
             </div>
           )}
 
-          {/* Step: Portions (for "ingredients needed" flow) */}
           {currentStep === STEPS.portions && (
             <div className="space-y-6">
               <div className="space-y-3">
@@ -1314,7 +1227,6 @@ export function SuggestionWizard({
                 />
               </div>
 
-              {/* Meal type */}
               <div className="space-y-3">
                 <Label>Type of meal</Label>
                 <div className="grid grid-cols-4 gap-2">
@@ -1370,7 +1282,6 @@ export function SuggestionWizard({
             </div>
           )}
 
-          {/* Step: AI Results */}
           {currentStep === STEPS.aiResults && (
             <div className="space-y-6">
               {/* Loading state - fetching suggestions */}
@@ -1380,7 +1291,6 @@ export function SuggestionWizard({
                 />
               )}
 
-              {/* Error state */}
               {aiError && (
                 <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                   <p className="text-destructive font-medium">
@@ -1406,7 +1316,6 @@ export function SuggestionWizard({
                 </div>
               )}
 
-              {/* Meal suggestion cards - show when we have suggestions but no selected meal yet */}
               {mealSuggestions.length > 0 && !selectedSuggestion && !completion && (
                 <div className="space-y-4">
                   <div className="text-center mb-6">
@@ -1468,10 +1377,8 @@ export function SuggestionWizard({
                 </div>
               )}
 
-              {/* Selected meal header + streaming recipe */}
               {selectedSuggestion && (
                 <div className="space-y-4">
-                  {/* Selected meal card (compact) */}
                   <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{selectedSuggestion.emoji}</span>
@@ -1482,7 +1389,6 @@ export function SuggestionWizard({
                     </div>
                   </div>
 
-                  {/* Loading recipe */}
                   {isAiLoading && !completion && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -1490,7 +1396,6 @@ export function SuggestionWizard({
                     </div>
                   )}
 
-                  {/* Shopping List - using shared IngredientChecklist component */}
                   {parsedIngredients.length > 0 && (
                     <IngredientChecklist
                       ingredients={parsedIngredients}
@@ -1502,7 +1407,6 @@ export function SuggestionWizard({
                     />
                   )}
 
-                  {/* Recipe content */}
                   {completion && (
                     <div className="prose prose-sm dark:prose-invert max-w-none">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{completion}</ReactMarkdown>
@@ -1518,10 +1422,8 @@ export function SuggestionWizard({
                 </div>
               )}
 
-              {/* Direct recipe flow (ingredients-needed) - show ingredients and recipe */}
               {flowType === "ingredients-needed" && (completion || parsedIngredients.length > 0) && !selectedSuggestion && (
                 <div className="space-y-4">
-                  {/* Parsed Ingredients Card - using shared IngredientChecklist component */}
                   {parsedIngredients.length > 0 && (
                     <IngredientChecklist
                       ingredients={parsedIngredients}
@@ -1533,7 +1435,6 @@ export function SuggestionWizard({
                     />
                   )}
 
-                  {/* Recipe Content */}
                   {completion && (
                     <div className="prose prose-sm dark:prose-invert max-w-none">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{completion}</ReactMarkdown>
@@ -1549,7 +1450,6 @@ export function SuggestionWizard({
                 </div>
               )}
 
-              {/* Empty state */}
               {!isAiLoading && mealSuggestions.length === 0 && !completion && !aiError && parsedIngredients.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12">
                   <p className="text-muted-foreground mb-4">
@@ -1565,7 +1465,6 @@ export function SuggestionWizard({
                 </div>
               )}
 
-              {/* Action buttons when recipe is done */}
               {!isAiLoading && (completion || parsedIngredients.length > 0) && (
                 <div className="flex flex-col gap-3 pt-4 border-t">
                   <Button

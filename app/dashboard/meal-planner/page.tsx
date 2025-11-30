@@ -10,32 +10,27 @@ async function getUserProfile() {
     redirect("/auth/login");
   }
 
-  // Fetch nutrition profile
   const { data: profile } = await supabase
     .from("nutrition_profiles")
     .select("meals_per_day, cooking_skill, calorie_target, protein_target_g, carbs_target_g, fat_target_g, primary_goal, budget_level")
     .eq("user_id", authData.user.id)
     .single();
 
-  // Fetch cuisines
   const { data: cuisines } = await supabase
     .from("user_favorite_cuisines")
     .select("cuisines(code)")
     .eq("user_id", authData.user.id);
 
-  // Fetch restrictions
   const { data: restrictions } = await supabase
     .from("user_dietary_restrictions")
     .select("dietary_restrictions(code)")
     .eq("user_id", authData.user.id);
 
-  // Fetch flavor preferences
   const { data: flavors } = await supabase
     .from("user_flavor_preferences")
     .select("flavor_profiles(code)")
     .eq("user_id", authData.user.id);
 
-  // Fetch food dislikes
   const { data: dislikes } = await supabase
     .from("user_food_dislikes")
     .select("food_name")

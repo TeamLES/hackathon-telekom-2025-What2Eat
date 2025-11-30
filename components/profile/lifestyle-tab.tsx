@@ -46,7 +46,6 @@ export function LifestyleTab({
 }: Props) {
   return (
     <div className="space-y-6">
-      {/* Eating Preferences */}
       <Card>
         <CardHeader>
           <CardTitle>💰 Budget & Cooking</CardTitle>
@@ -116,7 +115,6 @@ export function LifestyleTab({
         </CardContent>
       </Card>
 
-      {/* Schedule & Routine */}
       <Card>
         <CardHeader>
           <CardTitle>⏰ Schedule & Routine</CardTitle>
@@ -125,7 +123,6 @@ export function LifestyleTab({
         <CardContent className="space-y-6">
           {isEditing ? (
             <>
-              {/* Time preferences */}
               <div>
                 <Label className="text-base font-medium mb-3 block">
                   When are you most active?
@@ -189,7 +186,6 @@ export function LifestyleTab({
                 </div>
               </div>
 
-              {/* Meal distribution */}
               <div>
                 <Label className="text-base font-medium mb-3 block">
                   Which meals do you prefer heavier?
@@ -245,7 +241,6 @@ export function LifestyleTab({
                 </div>
               </div>
 
-              {/* Snacking */}
               <div>
                 <Label className="text-base font-medium mb-3 block">
                   Snacking preferences
@@ -357,7 +352,6 @@ export function LifestyleTab({
         </CardContent>
       </Card>
 
-      {/* Kitchen Equipment */}
       <Card>
         <CardHeader>
           <CardTitle>🍳 Kitchen Equipment</CardTitle>

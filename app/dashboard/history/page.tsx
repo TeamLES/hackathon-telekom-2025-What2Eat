@@ -35,7 +35,6 @@ async function getMealPlans() {
     return [];
   }
 
-  // Get meal plans for current month and surrounding months
   const today = new Date();
   const startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
   const endDate = new Date(today.getFullYear(), today.getMonth() + 2, 0);
@@ -72,7 +71,6 @@ async function getMealPlans() {
     return [];
   }
 
-  // Transform data to match calendar component format
   const formattedMeals = (mealPlans as any[] || []).map((plan) => ({
     date: plan.plan_date,
     meals: plan.meal_plan_items.map((item: any) => {

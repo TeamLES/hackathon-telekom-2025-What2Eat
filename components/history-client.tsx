@@ -28,7 +28,6 @@ export function HistoryClient({ meals }: HistoryClientProps) {
   const router = useRouter();
 
   const handleMealDeleted = () => {
-    // Refresh the page to get updated data
     router.refresh();
   };
 

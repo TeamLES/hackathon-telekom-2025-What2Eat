@@ -18,7 +18,6 @@ export interface RecipeIngredientsRequest {
   };
 }
 
-// Schema for parsed ingredients - simplified and explicit
 const recipeResponseSchema = z.object({
   recipeName: z.string().describe("Name of the dish"),
   recipeDescription: z.string().describe("Brief description of the dish"),
@@ -92,7 +91,6 @@ function buildRecipePrompt(request: RecipeIngredientsRequest): string {
     parts.push(`\nSpice level: ${request.spicyLevel}.`);
   }
 
-  // User profile data for personalization
   if (request.userProfile) {
     const profile = request.userProfile;
 
@@ -139,7 +137,6 @@ export async function POST(req: Request) {
 
     console.log("[recipe-ingredients] Generated recipe with", data.ingredientsList?.length || 0, "ingredients");
 
-    // Transform to expected format for frontend
     const response = {
       ingredients: (data.ingredientsList || []).map(ing => ({
         name: ing.ingredientName,

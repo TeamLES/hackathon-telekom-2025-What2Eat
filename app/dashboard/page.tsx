@@ -8,7 +8,6 @@ async function getUserData() {
 
   if (!user) return null;
 
-  // Fetch both nutrition profile and user profile (for name)
   const [nutritionRes, profileRes] = await Promise.all([
     supabase
       .from("nutrition_profiles")
@@ -33,7 +32,6 @@ async function getTodayNutrition(userId: string) {
   const supabase = await createClient();
   const today = getLocalDateString();
 
-  // Get today's meal plan
   const { data: mealPlan } = await supabase
     .from("meal_plans")
     .select("id")
@@ -45,7 +43,6 @@ async function getTodayNutrition(userId: string) {
     return { calories: 0, protein: 0, carbs: 0, fat: 0 };
   }
 
-  // Get all meal plan items with their recipes
   const { data: items } = await supabase
     .from("meal_plan_items")
     .select(`
@@ -63,10 +60,8 @@ async function getTodayNutrition(userId: string) {
     return { calories: 0, protein: 0, carbs: 0, fat: 0 };
   }
 
-  // Sum up all nutrition values
   const totals = items.reduce(
     (acc, item) => {
-      // recipe can be an array due to Supabase join
       const recipeData = Array.isArray(item.recipe) ? item.recipe[0] : item.recipe;
       
       if (recipeData) {
@@ -89,7 +84,6 @@ export default async function DashboardPage() {
   const profile = data?.profile || null;
   const firstName = data?.firstName || null;
   
-  // Get today's consumed nutrition
   const todayNutrition = data?.user 
     ? await getTodayNutrition(data.user.id)
     : { calories: 0, protein: 0, carbs: 0, fat: 0 };

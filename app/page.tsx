@@ -70,7 +70,6 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen flex flex-col">
-      {/* Navigation */}
       <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-gradient-to-b from-background/95 via-background/90 to-background/75 dark:from-[#141414]/85 dark:via-[#141414]/70 dark:to-[#141414]/55 backdrop-blur supports-[backdrop-filter]:bg-background/65 ring-1 ring-black/5 dark:ring-white/12 shadow-[0_8px_18px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_45px_rgba(0,0,0,0.3)]">
         <div className="flex h-20 items-center justify-between gap-4 px-4 md:px-8">
           <Link href="/" className="flex items-center gap-3">
@@ -92,7 +91,6 @@ export default async function Home() {
         </div>
       </header>
 
-      {/* Hero Section */}
       <section className="w-full py-20 md:py-32 bg-gradient-to-b from-background to-muted/30">
         <div className="max-w-6xl mx-auto px-5 flex flex-col items-center text-center gap-8">
           <div className="inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-medium bg-muted">
@@ -131,7 +129,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
       <section className="w-full py-20 bg-background">
         <div className="max-w-6xl mx-auto px-5">
           <div className="text-center mb-16">
@@ -160,7 +157,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* How it works Section */}
       <section className="w-full py-20 bg-muted/30">
         <div className="max-w-6xl mx-auto px-5">
           <div className="text-center mb-16">
@@ -190,7 +186,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
       <section className="w-full py-16 bg-background">
         <div className="max-w-6xl mx-auto px-5">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -214,7 +209,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="w-full py-20 bg-gradient-to-r from-brand-orange/10 to-brand-red/10">
         <div className="max-w-4xl mx-auto px-5 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
@@ -230,7 +224,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="w-full border-t py-12 bg-background">
         <div className="max-w-6xl mx-auto px-5">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">

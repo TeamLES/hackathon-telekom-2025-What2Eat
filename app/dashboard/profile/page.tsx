@@ -28,7 +28,6 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [editForm, setEditForm] = useState<ProfileData | null>(null);
 
-  // Lookup data
   const [lookupData, setLookupData] = useState<LookupData>({
     cuisines: [],
     dietaryOptions: [],
@@ -52,7 +51,6 @@ export default function ProfilePage() {
         return;
       }
 
-      // Load lookup tables
       const [cuisinesRes, dietaryRes, equipmentRes, mealTypesRes, flavorsRes] =
         await Promise.all([
           supabase.from("cuisines").select("id, name").order("name"),
@@ -73,7 +71,6 @@ export default function ProfilePage() {
         flavorProfiles: flavorsRes.data ?? [],
       });
 
-      // Load user data
       const [
         profileRes,
         nutritionRes,
@@ -216,7 +213,6 @@ export default function ProfilePage() {
         return;
       }
 
-      // 1. Update profiles table
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
@@ -228,7 +224,6 @@ export default function ProfilePage() {
 
       if (profileError) throw profileError;
 
-      // 2. Upsert nutrition_profiles
       const { error: nutritionError } = await supabase
         .from("nutrition_profiles")
         .upsert({
@@ -264,7 +259,6 @@ export default function ProfilePage() {
 
       if (nutritionError) throw nutritionError;
 
-      // 3. Update favorite cuisines
       await supabase
         .from("user_favorite_cuisines")
         .delete()
@@ -281,7 +275,6 @@ export default function ProfilePage() {
         if (cuisineError) throw cuisineError;
       }
 
-      // 4. Update dietary restrictions
       await supabase
         .from("user_dietary_restrictions")
         .delete()
@@ -300,7 +293,6 @@ export default function ProfilePage() {
         if (restrictionError) throw restrictionError;
       }
 
-      // 5. Update kitchen equipment
       await supabase
         .from("user_kitchen_equipment")
         .delete()
@@ -317,7 +309,6 @@ export default function ProfilePage() {
         if (equipmentError) throw equipmentError;
       }
 
-      // 6. Update preferred meal types
       await supabase
         .from("user_preferred_meal_types")
         .delete()
@@ -336,7 +327,6 @@ export default function ProfilePage() {
         if (mealTypeError) throw mealTypeError;
       }
 
-      // 7. Update flavor preferences
       await supabase
         .from("user_flavor_preferences")
         .delete()
@@ -353,7 +343,6 @@ export default function ProfilePage() {
         if (flavorError) throw flavorError;
       }
 
-      // 8. Update food dislikes
       await supabase.from("user_food_dislikes").delete().eq("user_id", userId);
 
       if (editForm.food_dislikes.length > 0) {
@@ -367,7 +356,6 @@ export default function ProfilePage() {
         if (dislikeError) throw dislikeError;
       }
 
-      // 9. Upsert user preferences
       const { error: preferencesError } = await supabase
         .from("user_preferences")
         .upsert({
