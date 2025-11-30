@@ -11,6 +11,11 @@ export interface RecipeIngredientsRequest {
   selectedCuisines?: string[];
   selectedEquipment?: string[];
   spicyLevel?: string;
+  userProfile?: {
+    cookingSkill?: string | null;
+    foodDislikes?: string[];
+    otherAllergyNotes?: string | null;
+  };
 }
 
 // Schema for parsed ingredients - simplified and explicit
@@ -72,7 +77,7 @@ function buildRecipePrompt(request: RecipeIngredientsRequest): string {
   parts.push(`Generate a complete recipe for "${request.mealName}" for ${request.portions} portion(s).`);
 
   if (request.selectedRestrictions && request.selectedRestrictions.length > 0) {
-    parts.push(`\nDietary restrictions: ${request.selectedRestrictions.join(", ")}.`);
+    parts.push(`\n⚠️ Dietary restrictions (MUST follow): ${request.selectedRestrictions.join(", ")}.`);
   }
 
   if (request.selectedCuisines && request.selectedCuisines.length > 0) {
@@ -85,6 +90,28 @@ function buildRecipePrompt(request: RecipeIngredientsRequest): string {
 
   if (request.spicyLevel && request.spicyLevel !== "none") {
     parts.push(`\nSpice level: ${request.spicyLevel}.`);
+  }
+
+  // User profile data for personalization
+  if (request.userProfile) {
+    const profile = request.userProfile;
+
+    if (profile.cookingSkill) {
+      const skillDescriptions: Record<string, string> = {
+        beginner: "Keep the recipe simple with basic techniques (beginner cook)",
+        intermediate: "Moderate complexity is fine (intermediate cook)",
+        advanced: "Feel free to use advanced techniques (experienced cook)",
+      };
+      parts.push(`\n${skillDescriptions[profile.cookingSkill] || ""}`);
+    }
+
+    if (profile.foodDislikes && profile.foodDislikes.length > 0) {
+      parts.push(`\n⚠️ Foods to avoid (user dislikes): ${profile.foodDislikes.join(", ")}.`);
+    }
+
+    if (profile.otherAllergyNotes) {
+      parts.push(`\n⚠️ CRITICAL - Additional allergy notes: ${profile.otherAllergyNotes}`);
+    }
   }
 
   parts.push(`\n\nIMPORTANT: Include ALL ingredients in the ingredientsList array.`);
