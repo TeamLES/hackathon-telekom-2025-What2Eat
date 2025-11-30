@@ -30,7 +30,8 @@ interface MealPlanCalendarProps {
   }[];
 }
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAYS = ["M", "T", "W", "T", "F", "S", "S"];
+const DAYS_FULL = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
@@ -334,156 +335,174 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
         </div>
       )}
 
-      {/* Calendar Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">
-          {MONTHS[month]} {year}
-        </h2>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={goToToday}>
-            Today
-          </Button>
-          <Button variant="outline" size="icon" onClick={goToPreviousMonth}>
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={goToNextMonth}>
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Calendar Grid */}
-      <Card>
-        <CardContent className="p-4">
-          {/* Day headers */}
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {DAYS.map((day) => (
-              <div
-                key={day}
-                className="text-center text-sm font-medium text-muted-foreground py-2"
-              >
-                {day}
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        {/* Left: Compact Calendar */}
+        <Card className="lg:col-span-2">
+          <CardContent className="p-3">
+            {/* Calendar Header */}
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-semibold">
+                {MONTHS[month]} {year}
+              </h2>
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={goToToday}>
+                  Today
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={goToPreviousMonth}>
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={goToNextMonth}>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </Button>
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* Calendar days */}
-          <div className="grid grid-cols-7 gap-1">
-            {calendarDays.map((day, index) => {
-              if (day === null) {
-                return <div key={`empty-${index}`} className="aspect-square" />;
-              }
-
-              const dayMeals = getMealsForDay(day);
-              const hasMeals = dayMeals.length > 0;
-
-              return (
-                <button
-                  key={day}
-                  onClick={() => handleDayClick(day)}
-                  className={cn(
-                    "aspect-square rounded-lg flex flex-col items-center justify-center text-sm transition-colors relative",
-                    isToday(day) && "bg-primary text-primary-foreground",
-                    isSelected(day) && !isToday(day) && "bg-primary/20 text-primary",
-                    !isToday(day) && !isSelected(day) && "hover:bg-muted",
-                    hasMeals && "font-semibold"
-                  )}
+            {/* Day headers */}
+            <div className="grid grid-cols-7 gap-0.5 mb-1">
+              {DAYS.map((day, i) => (
+                <div
+                  key={day + i}
+                  className="text-center text-xs font-medium text-muted-foreground py-1"
+                  title={DAYS_FULL[i]}
                 >
                   {day}
-                  {hasMeals && (
-                    <div className="absolute bottom-1 flex gap-0.5">
-                      {dayMeals.slice(0, 3).map((meal, i) => (
-                        <div
-                          key={i}
-                          className={cn(
-                            "w-1.5 h-1.5 rounded-full",
-                            isToday(day) ? "bg-primary-foreground" : "bg-[hsl(var(--brand-orange))]"
-                          )}
-                          title={meal.name}
-                        />
-                      ))}
-                      {dayMeals.length > 3 && (
-                        <span className={cn(
-                          "text-[8px] ml-0.5",
-                          isToday(day) ? "text-primary-foreground" : "text-muted-foreground"
-                        )}>
-                          +{dayMeals.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+                </div>
+              ))}
+            </div>
 
-      {/* Selected day meals */}
-      {selectedDate && (
-        <Card>
-          <CardContent className="p-4">
-            <h3 className="font-medium mb-3 flex items-center gap-2">
-              <span>📅</span>
-              {selectedDate.toLocaleDateString("en-US", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              })}
-            </h3>
+            {/* Calendar days - Compact */}
+            <div className="grid grid-cols-7 gap-0.5">
+              {calendarDays.map((day, index) => {
+                if (day === null) {
+                  return <div key={`empty-${index}`} className="aspect-square" />;
+                }
 
-            {selectedDayMeals.length === 0 ? (
-              <div className="text-center py-6">
-                <div className="text-4xl mb-2">🍽️</div>
-                <p className="text-muted-foreground text-sm">
-                  No meals planned for this day.
-                </p>
-                <p className="text-muted-foreground text-xs mt-1">
-                  Use the Search to find and add meals!
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {selectedDayMeals.map((meal) => (
+                const dayMeals = getMealsForDay(day);
+                const hasMeals = dayMeals.length > 0;
+
+                return (
                   <button
-                    key={meal.id}
-                    onClick={() => handleMealClick(meal)}
-                    className="w-full text-left flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
+                    key={day}
+                    onClick={() => handleDayClick(day)}
+                    className={cn(
+                      "aspect-square rounded-md flex flex-col items-center justify-center text-xs transition-all relative",
+                      isToday(day) && "bg-primary text-primary-foreground font-bold",
+                      isSelected(day) && !isToday(day) && "bg-[hsl(var(--brand-orange))] text-white font-semibold",
+                      !isToday(day) && !isSelected(day) && "hover:bg-muted",
+                      hasMeals && !isSelected(day) && !isToday(day) && "font-medium"
+                    )}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">{MEAL_TYPE_EMOJI[meal.type] || "🍽️"}</span>
-                      <div>
-                        <p className="font-medium group-hover:text-primary transition-colors">
-                          {meal.name}
-                        </p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span className="capitalize">{meal.type}</span>
-                          {meal.cookTime && (
-                            <>
-                              <span>•</span>
-                              <span>{meal.cookTime} min</span>
-                            </>
-                          )}
-                        </div>
+                    {day}
+                    {hasMeals && (
+                      <div className="absolute bottom-0.5 flex gap-px">
+                        {dayMeals.slice(0, 3).map((meal, i) => (
+                          <div
+                            key={i}
+                            className={cn(
+                              "w-1 h-1 rounded-full",
+                              isToday(day) || isSelected(day)
+                                ? "bg-current opacity-70"
+                                : "bg-[hsl(var(--brand-orange))]"
+                            )}
+                          />
+                        ))}
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {meal.calories && (
-                        <span className="text-sm text-muted-foreground">
-                          {meal.calories} kcal
-                        </span>
-                      )}
-                      <span className="text-muted-foreground group-hover:text-primary transition-colors">
-                        →
-                      </span>
-                    </div>
+                    )}
                   </button>
-                ))}
+                );
+              })}
+            </div>
+
+            {/* Legend */}
+            <div className="flex items-center justify-center gap-4 mt-3 pt-3 border-t text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-primary" />
+                Today
+              </span>
+              <span className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-[hsl(var(--brand-orange))]" />
+                Meals
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Right: Selected Day Meals */}
+        <Card className="lg:col-span-3">
+          <CardContent className="p-4">
+            {selectedDate ? (
+              <>
+                <h3 className="font-semibold mb-3 flex items-center gap-2 text-base">
+                  <span>📅</span>
+                  {selectedDate.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </h3>
+
+                {selectedDayMeals.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-2">🍽️</div>
+                    <p className="text-muted-foreground text-sm">
+                      No meals planned for this day.
+                    </p>
+                    <p className="text-muted-foreground text-xs mt-1">
+                      Use Search to find and add meals!
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {selectedDayMeals.map((meal) => (
+                      <button
+                        key={meal.id}
+                        onClick={() => handleMealClick(meal)}
+                        className="w-full text-left flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">{MEAL_TYPE_EMOJI[meal.type] || "🍽️"}</span>
+                          <div>
+                            <p className="font-medium group-hover:text-primary transition-colors">
+                              {meal.name}
+                            </p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="capitalize">{meal.type}</span>
+                              {meal.cookTime && (
+                                <>
+                                  <span>•</span>
+                                  <span>{meal.cookTime} min</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {meal.calories && (
+                            <span className="text-sm text-muted-foreground hidden sm:inline">
+                              {meal.calories} kcal
+                            </span>
+                          )}
+                          <span className="text-muted-foreground group-hover:text-primary transition-colors">
+                            →
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-2">👆</div>
+                <p className="text-muted-foreground text-sm">
+                  Select a day to see meals
+                </p>
               </div>
             )}
           </CardContent>
         </Card>
-      )}
+      </div>
     </div>
   );
 }

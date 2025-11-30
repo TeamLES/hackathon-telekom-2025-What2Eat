@@ -23,10 +23,16 @@ interface IngredientChecklistProps {
   onSaveToList?: (selectedIngredients: Ingredient[]) => Promise<void>;
   /** Initial selection - if not provided, selects items user doesn't have */
   initialSelection?: Set<number>;
+  /** Controlled selection state */
+  selectedIndices?: Set<number>;
+  /** Called when selection changes (for controlled mode) */
+  onSelectionChange?: (indices: Set<number>) => void;
   /** Show compact version without header */
   compact?: boolean;
   /** Custom class name */
   className?: string;
+  /** Show optional badge */
+  showOptionalBadge?: boolean;
 }
 
 export function IngredientChecklist({
@@ -35,8 +41,11 @@ export function IngredientChecklist({
   userOwnedIngredients = [],
   onSaveToList,
   initialSelection,
+  selectedIndices: controlledIndices,
+  onSelectionChange,
   compact = false,
   className,
+  showOptionalBadge = false,
 }: IngredientChecklistProps) {
   // Mark which ingredients user has
   const ingredientsWithOwnership = ingredients.map((ing) => {
@@ -56,7 +65,18 @@ export function IngredientChecklist({
     return new Set(indices);
   };
 
-  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(getDefaultSelection);
+  // Support both controlled and uncontrolled mode
+  const [internalIndices, setInternalIndices] = useState<Set<number>>(getDefaultSelection);
+  const selectedIndices = controlledIndices ?? internalIndices;
+  const setSelectedIndices = (value: Set<number> | ((prev: Set<number>) => Set<number>)) => {
+    const newValue = typeof value === 'function' ? value(selectedIndices) : value;
+    if (onSelectionChange) {
+      onSelectionChange(newValue);
+    } else {
+      setInternalIndices(newValue);
+    }
+  };
+  
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -168,45 +188,55 @@ export function IngredientChecklist({
 
       {/* Ingredient Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        {ingredientsWithOwnership.map((ing, index) => (
-          <button
-            key={index}
-            onClick={() => toggleSelection(index)}
-            className={cn(
-              "flex items-center gap-2 p-2 rounded-lg border text-sm text-left transition-all",
-              selectedIndices.has(index)
-                ? "bg-orange-50 dark:bg-orange-950/30 border-orange-500 shadow-sm"
-                : ing.userHasIt
-                  ? "bg-green-50/50 dark:bg-green-950/10 border-green-200 dark:border-green-900 hover:border-orange-300"
-                  : "bg-background border-border hover:bg-muted/50 hover:border-muted-foreground/50"
-            )}
-          >
-            <div
+        {ingredientsWithOwnership.map((ing, index) => {
+          // Format quantity display
+          const qtyDisplay = ing.quantity && ing.quantity > 0
+            ? `${ing.quantity}${ing.unit ? ` ${ing.unit}` : ''}`
+            : ing.unit || '';
+
+          return (
+            <button
+              key={index}
+              onClick={() => toggleSelection(index)}
               className={cn(
-                "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all",
+                "flex items-center gap-2 p-2 rounded-lg border text-sm text-left transition-all min-h-[44px]",
                 selectedIndices.has(index)
-                  ? "bg-orange-500 border-orange-500"
-                  : "border-gray-400 dark:border-gray-500"
+                  ? "bg-orange-50 dark:bg-orange-950/30 border-orange-500 shadow-sm"
+                  : ing.userHasIt
+                    ? "bg-green-50/50 dark:bg-green-950/10 border-green-200 dark:border-green-900 hover:border-orange-300"
+                    : "bg-background border-border hover:bg-muted/50 hover:border-muted-foreground/50"
               )}
             >
-              {selectedIndices.has(index) && (
-                <Check className="w-3.5 h-3.5 text-white" />
-              )}
-            </div>
-            <span className="text-muted-foreground w-16 text-right flex-shrink-0">
-              {ing.quantity && ing.quantity}
-              {ing.unit && ` ${ing.unit}`}
-            </span>
-            <span className={cn("flex-1", ing.userHasIt && !selectedIndices.has(index) && "text-muted-foreground")}>
-              {ing.name}
-            </span>
-            {ing.userHasIt && (
-              <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded">
-                ✓ have
+              <div
+                className={cn(
+                  "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all",
+                  selectedIndices.has(index)
+                    ? "bg-orange-500 border-orange-500"
+                    : "border-gray-400 dark:border-gray-500"
+                )}
+              >
+                {selectedIndices.has(index) && (
+                  <Check className="w-3.5 h-3.5 text-white" />
+                )}
+              </div>
+              <span className={cn(
+                "flex-1 truncate",
+                ing.userHasIt && !selectedIndices.has(index) && "text-muted-foreground"
+              )}>
+                {qtyDisplay && <span className="text-muted-foreground">{qtyDisplay} </span>}
+                {ing.name}
               </span>
-            )}
-          </button>
-        ))}
+              {ing.userHasIt && (
+                <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded flex-shrink-0">
+                  ✓ have
+                </span>
+              )}
+              {showOptionalBadge && ing.isOptional && (
+                <span className="text-xs text-muted-foreground flex-shrink-0">(optional)</span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Compact save button */}

@@ -1595,41 +1595,45 @@ export function SuggestionWizard({
                       )}
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {parsedIngredients.map((ing, index) => (
-                          <button
-                            key={index}
-                            onClick={() => toggleIngredientSelection(index)}
-                            className={cn(
-                              "flex items-center gap-2 p-2 rounded-lg border text-sm text-left transition-all",
-                              selectedIngredientIndices.has(index)
-                                ? "bg-orange-50 dark:bg-orange-950/30 border-orange-500 shadow-sm"
-                                : ing.userHasIt
-                                  ? "bg-green-50/50 dark:bg-green-950/10 border-green-200 dark:border-green-900 hover:border-orange-300"
-                                  : "bg-background border-border hover:bg-muted/50 hover:border-muted-foreground/50"
-                            )}
-                          >
-                            <div
+                        {parsedIngredients.map((ing, index) => {
+                          const qtyDisplay = ing.quantity && ing.quantity > 0
+                            ? `${ing.quantity}${ing.unit ? ` ${ing.unit}` : ''}`
+                            : ing.unit || '';
+                          return (
+                            <button
+                              key={index}
+                              onClick={() => toggleIngredientSelection(index)}
                               className={cn(
-                                "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all",
+                                "flex items-center gap-2 p-2 rounded-lg border text-sm text-left transition-all min-h-[44px]",
                                 selectedIngredientIndices.has(index)
-                                  ? "bg-orange-500 border-orange-500"
-                                  : "border-gray-400 dark:border-gray-500"
+                                  ? "bg-orange-50 dark:bg-orange-950/30 border-orange-500 shadow-sm"
+                                  : ing.userHasIt
+                                    ? "bg-green-50/50 dark:bg-green-950/10 border-green-200 dark:border-green-900 hover:border-orange-300"
+                                    : "bg-background border-border hover:bg-muted/50 hover:border-muted-foreground/50"
                               )}
                             >
-                              {selectedIngredientIndices.has(index) && (
-                                <Check className="w-3.5 h-3.5 text-white" />
+                              <div
+                                className={cn(
+                                  "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all",
+                                  selectedIngredientIndices.has(index)
+                                    ? "bg-orange-500 border-orange-500"
+                                    : "border-gray-400 dark:border-gray-500"
+                                )}
+                              >
+                                {selectedIngredientIndices.has(index) && (
+                                  <Check className="w-3.5 h-3.5 text-white" />
+                                )}
+                              </div>
+                              <span className={cn("flex-1 truncate", ing.userHasIt && !selectedIngredientIndices.has(index) && "text-muted-foreground")}>
+                                {qtyDisplay && <span className="text-muted-foreground">{qtyDisplay} </span>}
+                                {ing.name}
+                              </span>
+                              {ing.userHasIt && (
+                                <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded flex-shrink-0">✓ have</span>
                               )}
-                            </div>
-                            <span className="text-muted-foreground w-16 text-right flex-shrink-0">
-                              {ing.quantity && ing.quantity}
-                              {ing.unit && ` ${ing.unit}`}
-                            </span>
-                            <span className={cn("flex-1", ing.userHasIt && !selectedIngredientIndices.has(index) && "text-muted-foreground")}>{ing.name}</span>
-                            {ing.userHasIt && (
-                              <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded">✓ have</span>
-                            )}
-                          </button>
-                        ))}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -1697,40 +1701,44 @@ export function SuggestionWizard({
                         </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {parsedIngredients.map((ing, index) => (
-                          <button
-                            key={index}
-                            onClick={() => toggleIngredientSelection(index)}
-                            className={cn(
-                              "flex items-center gap-2 p-2 rounded-lg border text-sm text-left transition-all",
-                              selectedIngredientIndices.has(index)
-                                ? "bg-green-50 dark:bg-green-950/30 border-green-500 shadow-sm"
-                                : "bg-background border-border hover:bg-muted/50 hover:border-muted-foreground/50",
-                              ing.isOptional && "opacity-70"
-                            )}
-                          >
-                            <div
+                        {parsedIngredients.map((ing, index) => {
+                          const qtyDisplay = ing.quantity && ing.quantity > 0
+                            ? `${ing.quantity}${ing.unit ? ` ${ing.unit}` : ''}`
+                            : ing.unit || '';
+                          return (
+                            <button
+                              key={index}
+                              onClick={() => toggleIngredientSelection(index)}
                               className={cn(
-                                "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all",
+                                "flex items-center gap-2 p-2 rounded-lg border text-sm text-left transition-all min-h-[44px]",
                                 selectedIngredientIndices.has(index)
-                                  ? "bg-green-500 border-green-500"
-                                  : "border-gray-400 dark:border-gray-500"
+                                  ? "bg-orange-50 dark:bg-orange-950/30 border-orange-500 shadow-sm"
+                                  : "bg-background border-border hover:bg-muted/50 hover:border-muted-foreground/50",
+                                ing.isOptional && "opacity-70"
                               )}
                             >
-                              {selectedIngredientIndices.has(index) && (
-                                <Check className="w-3.5 h-3.5 text-white" />
+                              <div
+                                className={cn(
+                                  "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all",
+                                  selectedIngredientIndices.has(index)
+                                    ? "bg-orange-500 border-orange-500"
+                                    : "border-gray-400 dark:border-gray-500"
+                                )}
+                              >
+                                {selectedIngredientIndices.has(index) && (
+                                  <Check className="w-3.5 h-3.5 text-white" />
+                                )}
+                              </div>
+                              <span className="flex-1 truncate">
+                                {qtyDisplay && <span className="text-muted-foreground">{qtyDisplay} </span>}
+                                {ing.name}
+                              </span>
+                              {ing.isOptional && (
+                                <span className="text-xs text-muted-foreground flex-shrink-0">(optional)</span>
                               )}
-                            </div>
-                            <span className="text-muted-foreground w-16 text-right flex-shrink-0">
-                              {ing.quantity && ing.quantity}
-                              {ing.unit && ` ${ing.unit}`}
-                            </span>
-                            <span className="flex-1">{ing.name}</span>
-                            {ing.isOptional && (
-                              <span className="text-xs text-muted-foreground">(optional)</span>
-                            )}
-                          </button>
-                        ))}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
