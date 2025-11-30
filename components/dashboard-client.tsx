@@ -238,7 +238,7 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <span className="text-2xl">📝</span>
-                Get a recipe
+                What ingredients do I need?
               </CardTitle>
               <CardDescription>
                 Already know what to cook? Get detailed ingredients and steps

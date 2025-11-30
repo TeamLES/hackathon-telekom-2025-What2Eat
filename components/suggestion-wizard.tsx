@@ -153,9 +153,12 @@ export function SuggestionWizard({
     unit: string | null;
     category?: string;
     isOptional?: boolean;
+    userHasIt?: boolean; // true if user already has this ingredient
   };
   const [parsedIngredients, setParsedIngredients] = useState<ParsedIngredient[]>([]);
   const [selectedIngredientIndices, setSelectedIngredientIndices] = useState<Set<number>>(new Set());
+  // Store user's owned ingredients from the ingredients step
+  const [userOwnedIngredients, setUserOwnedIngredients] = useState<string[]>([]);
   const [isSavingToList, setIsSavingToList] = useState(false);
   const [savedToList, setSavedToList] = useState(false);
 
@@ -401,7 +404,8 @@ export function SuggestionWizard({
     if (isOpen && initialFlow) {
       setFlowType(initialFlow);
       if (initialFlow === "what-to-cook") {
-        setCurrentStep(STEPS.ingredientSource);
+        // Go directly to ingredients step (skip ingredientSource)
+        setCurrentStep(STEPS.ingredients);
       } else if (initialFlow === "ingredients-needed") {
         setCurrentStep(STEPS.portions);
       }
@@ -434,6 +438,7 @@ export function SuggestionWizard({
     setSaveSuccess(false);
     setParsedIngredients([]);
     setSelectedIngredientIndices(new Set());
+    setUserOwnedIngredients([]);
     setIsSavingToList(false);
     setSavedToList(false);
     stopGeneration();
@@ -546,7 +551,8 @@ export function SuggestionWizard({
   const handleFlowSelect = (flow: FlowType) => {
     setFlowType(flow);
     if (flow === "what-to-cook") {
-      setCurrentStep(STEPS.ingredientSource);
+      // Go directly to ingredients step (skip ingredientSource)
+      setCurrentStep(STEPS.ingredients);
     } else if (flow === "ingredients-needed") {
       setCurrentStep(STEPS.portions);
     }
@@ -564,6 +570,12 @@ export function SuggestionWizard({
 
   const handleNext = () => {
     if (currentStep === STEPS.ingredients) {
+      // Save user's ingredients for later comparison
+      const ownedList = ingredients
+        .split(",")
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean);
+      setUserOwnedIngredients(ownedList);
       setCurrentStep(STEPS.preferences);
     } else if (currentStep === STEPS.preferences) {
       setCurrentStep(STEPS.details);
@@ -578,16 +590,12 @@ export function SuggestionWizard({
       setCurrentStep(STEPS.initial);
       setFlowType(null);
     } else if (currentStep === STEPS.ingredients) {
-      setCurrentStep(STEPS.ingredientSource);
-      setIngredientSource(null);
+      // Go back to initial step
+      setCurrentStep(STEPS.initial);
+      setFlowType(null);
     } else if (currentStep === STEPS.preferences) {
-      if (ingredientSource === "go-shopping") {
-        // Go back to ingredient source selection (skipping ingredients step)
-        setCurrentStep(STEPS.ingredientSource);
-        setIngredientSource(null);
-      } else {
-        setCurrentStep(STEPS.ingredients);
-      }
+      // Always go back to ingredients
+      setCurrentStep(STEPS.ingredients);
     } else if (currentStep === STEPS.details) {
       setCurrentStep(STEPS.preferences);
     } else if (currentStep === STEPS.portions) {
@@ -648,35 +656,80 @@ export function SuggestionWizard({
   // Handle when user selects a meal suggestion
   const handleSelectMeal = async (meal: typeof mealSuggestions[0]) => {
     setSelectedSuggestion(meal);
+    setIsAiLoading(true);
+    setCompletion("");
+    setParsedIngredients([]);
+    setAiError(null);
 
-    // Build request with the selected meal
-    const requestBody = {
-      flowType,
-      ingredientSource,
-      ingredients,
-      selectedCuisines: selectedCuisines
-        .map((id) => cuisines.find((c) => c.id === id)?.name)
-        .filter(Boolean) as string[],
-      selectedRestrictions: selectedRestrictions
-        .map((id) => dietaryRestrictions.find((r) => r.id === id)?.label)
-        .filter(Boolean) as string[],
-      selectedEquipment: selectedEquipment
-        .map((id) => kitchenEquipment.find((e) => e.id === id)?.label)
-        .filter(Boolean) as string[],
-      spicyLevel,
-      quickPreferences,
-      additionalPreferences,
-      cookingTime,
-      mealType,
-      extraInfo,
-      portions,
-      selectedMeal: {
-        name: meal.name,
-        description: meal.description,
-      },
-    };
+    try {
+      // Call recipe-ingredients API to get structured ingredients
+      const response = await fetch("/api/recipe-ingredients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mealName: meal.name,
+          portions,
+          selectedRestrictions: selectedRestrictions
+            .map((id) => dietaryRestrictions.find((r) => r.id === id)?.label)
+            .filter(Boolean) as string[],
+          selectedCuisines: selectedCuisines
+            .map((id) => cuisines.find((c) => c.id === id)?.name)
+            .filter(Boolean) as string[],
+          selectedEquipment: selectedEquipment
+            .map((id) => kitchenEquipment.find((e) => e.id === id)?.label)
+            .filter(Boolean) as string[],
+          spicyLevel,
+        }),
+      });
 
-    await fetchFullRecipe(requestBody);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Parse ingredients and mark which ones user already has
+      if (data.ingredients) {
+        const ingredientsWithOwnership = data.ingredients.map((ing: ParsedIngredient) => {
+          const userHasIt = userOwnedIngredients.some((owned) =>
+            ing.name.toLowerCase().includes(owned) || owned.includes(ing.name.toLowerCase())
+          );
+          return { ...ing, userHasIt };
+        });
+        setParsedIngredients(ingredientsWithOwnership);
+
+        // Only pre-select ingredients the user DOESN'T have (needs to buy)
+        const indicesToSelect = ingredientsWithOwnership
+          .map((ing: ParsedIngredient, i: number) => (!ing.userHasIt ? i : -1))
+          .filter((i: number) => i !== -1);
+        setSelectedIngredientIndices(new Set(indicesToSelect));
+      }
+
+      // Build markdown recipe from structured data
+      if (data.recipe) {
+        const recipe = data.recipe;
+        let markdown = `# ${recipe.name}\n\n`;
+        markdown += `${recipe.description}\n\n`;
+        markdown += `**Prep time:** ${recipe.cookTime} min | **Difficulty:** ${recipe.difficulty}\n\n`;
+
+        if (recipe.calories || recipe.protein || recipe.carbs || recipe.fat) {
+          markdown += `## 📊 Nutrition (per serving)\n\n`;
+          markdown += `| Calories | Protein | Carbs | Fat |\n`;
+          markdown += `|----------|---------|-------|-----|\n`;
+          markdown += `| ${recipe.calories || '-'} kcal | ${recipe.protein || '-'}g | ${recipe.carbs || '-'}g | ${recipe.fat || '-'}g |\n\n`;
+        }
+
+        markdown += `## 👨‍🍳 Instructions\n\n`;
+        markdown += recipe.instructions;
+
+        setCompletion(markdown);
+      }
+    } catch (error) {
+      console.error("AI recipe error:", error);
+      setAiError(error as Error);
+    } finally {
+      setIsAiLoading(false);
+    }
   };
 
   const startCamera = async () => {
@@ -844,8 +897,7 @@ export function SuggestionWizard({
             )}
             <h2 className="text-lg font-semibold">
               {currentStep === STEPS.initial && "What do you need?"}
-              {currentStep === STEPS.ingredientSource && "Choose your approach"}
-              {currentStep === STEPS.ingredients && "Your ingredients"}
+              {currentStep === STEPS.ingredients && "What do you have?"}
               {currentStep === STEPS.preferences && "Your preferences"}
               {currentStep === STEPS.details && "Final details"}
               {currentStep === STEPS.portions && "What do you want to cook?"}
@@ -898,58 +950,15 @@ export function SuggestionWizard({
             </div>
           )}
 
-          {/* Step 1: Ingredient source */}
-          {currentStep === STEPS.ingredientSource && (
-            <div className="space-y-4">
-              <p className="text-muted-foreground text-center mb-6">
-                How do you want to get ingredients?
-              </p>
-
-              <Card
-                className={cn(
-                  "cursor-pointer transition-all hover:border-primary",
-                  ingredientSource === "use-my-ingredients" && "border-primary bg-primary/5"
-                )}
-                onClick={() => handleIngredientSourceSelect("use-my-ingredients")}
-              >
-                <CardHeader>
-                  <CardTitle className="text-lg">🧊 I want to use my ingredients</CardTitle>
-                  <CardDescription>
-                    Tell us what you have and we&apos;ll suggest what you can make
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-
-              <Card
-                className={cn(
-                  "cursor-pointer transition-all hover:border-primary",
-                  ingredientSource === "go-shopping" && "border-primary bg-primary/5"
-                )}
-                onClick={() => handleIngredientSourceSelect("go-shopping")}
-              >
-                <CardHeader>
-                  <CardTitle className="text-lg">🛒 I will go shopping</CardTitle>
-                  <CardDescription>
-                    We&apos;ll suggest meals and give you a shopping list
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </div>
-          )}
-
           {/* Step 2: Ingredients */}
           {currentStep === STEPS.ingredients && (
             <div className="space-y-6">
               <div className="bg-muted/50 rounded-lg p-4">
                 <h3 className="font-medium mb-2">
-                  {ingredientSource === "use-my-ingredients"
-                    ? "What ingredients do you have?"
-                    : "Any ingredients you want to include?"}
+                  What ingredients do you have?
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  {ingredientSource === "use-my-ingredients"
-                    ? "List the ingredients you have in your fridge/pantry"
-                    : "Optional: specify ingredients you'd like to use"}
+                  Tell us what&apos;s in your fridge/pantry. We&apos;ll suggest recipes and show you what you need to buy.
                 </p>
               </div>
 
@@ -1403,6 +1412,106 @@ export function SuggestionWizard({
                     <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       <span>Getting your recipe ready...</span>
+                    </div>
+                  )}
+
+                  {/* Shopping List - show ingredients user needs to buy */}
+                  {parsedIngredients.length > 0 && (
+                    <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <h4 className="font-semibold flex items-center gap-2">
+                          <ShoppingCart className="w-4 h-4" />
+                          Shopping List ({selectedIngredientIndices.size} to buy)
+                        </h4>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={toggleAllIngredients}
+                            className="text-xs"
+                          >
+                            {selectedIngredientIndices.size === parsedIngredients.length ? "Deselect All" : "Select All"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={savedToList ? "outline" : "default"}
+                            onClick={saveToShoppingList}
+                            disabled={isSavingToList || savedToList || selectedIngredientIndices.size === 0}
+                            className={savedToList ? "text-green-600 border-green-600" : ""}
+                          >
+                            {isSavingToList ? (
+                              <>
+                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                Saving...
+                              </>
+                            ) : savedToList ? (
+                              <>
+                                <Check className="w-3 h-3 mr-1" />
+                                Saved!
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingCart className="w-3 h-3 mr-1" />
+                                Save Selected
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Legend */}
+                      {userOwnedIngredients.length > 0 && (
+                        <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1.5">
+                            <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded text-[10px]">✓ have</span>
+                            <span>= you already have</span>
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <div className="w-4 h-4 rounded border-2 border-orange-500 bg-orange-500 flex items-center justify-center">
+                              <Check className="w-2.5 h-2.5 text-white" />
+                            </div>
+                            <span>= will be added to list</span>
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {parsedIngredients.map((ing, index) => (
+                          <button
+                            key={index}
+                            onClick={() => toggleIngredientSelection(index)}
+                            className={cn(
+                              "flex items-center gap-2 p-2 rounded-lg border text-sm text-left transition-all",
+                              selectedIngredientIndices.has(index)
+                                ? "bg-orange-50 dark:bg-orange-950/30 border-orange-500 shadow-sm"
+                                : ing.userHasIt
+                                  ? "bg-green-50/50 dark:bg-green-950/10 border-green-200 dark:border-green-900 hover:border-orange-300"
+                                  : "bg-background border-border hover:bg-muted/50 hover:border-muted-foreground/50"
+                            )}
+                          >
+                            <div
+                              className={cn(
+                                "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all",
+                                selectedIngredientIndices.has(index)
+                                  ? "bg-orange-500 border-orange-500"
+                                  : "border-gray-400 dark:border-gray-500"
+                              )}
+                            >
+                              {selectedIngredientIndices.has(index) && (
+                                <Check className="w-3.5 h-3.5 text-white" />
+                              )}
+                            </div>
+                            <span className="text-muted-foreground w-16 text-right flex-shrink-0">
+                              {ing.quantity && ing.quantity}
+                              {ing.unit && ` ${ing.unit}`}
+                            </span>
+                            <span className={cn("flex-1", ing.userHasIt && !selectedIngredientIndices.has(index) && "text-muted-foreground")}>{ing.name}</span>
+                            {ing.userHasIt && (
+                              <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded">✓ have</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
 
