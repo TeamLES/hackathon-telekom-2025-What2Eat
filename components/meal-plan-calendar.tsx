@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, X, Clock, Flame, Dumbbell, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Clock, Flame, Dumbbell, Loader2, Trash2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ interface MealPlanCalendarProps {
     date: string;
     meals: MealItem[];
   }[];
+  onMealDeleted?: () => void;
 }
 
 const DAYS = ["M", "T", "W", "T", "F", "S", "S"];
@@ -50,10 +51,11 @@ const DIFFICULTY_LABELS: Record<string, { label: string; color: string }> = {
   advanced: { label: "Hard", color: "text-red-600 dark:text-red-400" },
 };
 
-export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
+export function MealPlanCalendar({ meals = [], onMealDeleted }: MealPlanCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedMeal, setSelectedMeal] = useState<MealItem | null>(null);
+  const [deletingMealId, setDeletingMealId] = useState<string | null>(null);
 
   // Ingredients state for modal
   const [mealIngredients, setMealIngredients] = useState<Ingredient[]>([]);
@@ -163,7 +165,35 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
     }
   };
 
+  // Delete a meal from the calendar
+  const handleDeleteMeal = async (mealId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
 
+    if (deletingMealId) return; // Already deleting
+
+    setDeletingMealId(mealId);
+
+    try {
+      const response = await fetch(`/api/meal-plan-item?id=${mealId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        // Close modal if open
+        if (selectedMeal?.id === mealId) {
+          setSelectedMeal(null);
+        }
+        // Notify parent to refresh data
+        onMealDeleted?.();
+      } else {
+        console.error("Failed to delete meal");
+      }
+    } catch (error) {
+      console.error("Error deleting meal:", error);
+    } finally {
+      setDeletingMealId(null);
+    }
+  };
 
   // Save ingredients to shopping list
   const saveToShoppingList = async (ingredients: Ingredient[]) => {
@@ -322,13 +352,24 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
             </div>
 
             {/* Footer */}
-            <div className="flex-shrink-0 p-4 border-t bg-background">
+            <div className="flex-shrink-0 p-4 border-t bg-background flex gap-2">
               <Button
                 variant="outline"
-                className="w-full"
+                className="flex-1"
                 onClick={() => setSelectedMeal(null)}
               >
                 Close
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => selectedMeal && handleDeleteMeal(selectedMeal.id)}
+                disabled={deletingMealId === selectedMeal?.id}
+              >
+                {deletingMealId === selectedMeal?.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
               </Button>
             </div>
           </Card>
@@ -455,12 +496,14 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
                 ) : (
                   <div className="space-y-2">
                     {selectedDayMeals.map((meal) => (
-                      <button
+                      <div
                         key={meal.id}
-                        onClick={() => handleMealClick(meal)}
-                        className="w-full text-left flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
                       >
-                        <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => handleMealClick(meal)}
+                          className="flex-1 text-left flex items-center gap-3"
+                        >
                           <span className="text-xl">{MEAL_TYPE_EMOJI[meal.type] || "🍽️"}</span>
                           <div>
                             <p className="font-medium group-hover:text-primary transition-colors">
@@ -476,18 +519,30 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
                               )}
                             </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-3">
+                        </button>
+                        <div className="flex items-center gap-2">
                           {meal.calories && (
                             <span className="text-sm text-muted-foreground hidden sm:inline">
                               {meal.calories} kcal
                             </span>
                           )}
+                          <button
+                            onClick={(e) => handleDeleteMeal(meal.id, e)}
+                            disabled={deletingMealId === meal.id}
+                            className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all"
+                            title="Delete meal"
+                          >
+                            {deletingMealId === meal.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </button>
                           <span className="text-muted-foreground group-hover:text-primary transition-colors">
                             →
                           </span>
                         </div>
-                      </button>
+                      </div>
                     ))}
                   </div>
                 )}

@@ -1,4 +1,4 @@
-import { MealPlanCalendar } from "@/components/meal-plan-calendar";
+import { HistoryClient } from "@/components/history-client";
 import { createClient } from "@/lib/supabase/server";
 import { getLocalDateString } from "@/lib/utils";
 
@@ -105,7 +105,7 @@ export default async function HistoryPage() {
         </p>
       </div>
 
-      <MealPlanCalendar meals={meals} />
+      <HistoryClient meals={meals} />
     </div>
   );
 }

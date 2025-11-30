@@ -76,7 +76,7 @@ export function IngredientChecklist({
       setInternalIndices(newValue);
     }
   };
-  
+
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 

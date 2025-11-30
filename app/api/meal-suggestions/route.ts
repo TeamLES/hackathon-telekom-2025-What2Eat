@@ -12,7 +12,6 @@ export interface MealSuggestionRequest {
   selectedEquipment: string[];
   spicyLevel: string;
   quickPreferences: string[];
-  additionalPreferences?: string;
   // Details
   cookingTime?: number;
   mealType?: "snack" | "breakfast" | "lunch" | "dinner";
@@ -206,11 +205,6 @@ function buildUserPrompt(request: MealSuggestionRequest): string {
     );
   }
 
-  // Additional preferences
-  if (request.additionalPreferences) {
-    parts.push(`\nAdditional preferences: ${request.additionalPreferences}`);
-  }
-
   // Extra info
   if (request.extraInfo) {
     parts.push(`\nExtra notes: ${request.extraInfo}`);
@@ -280,12 +274,12 @@ function buildUserPrompt(request: MealSuggestionRequest): string {
 
 function buildSuggestionsPrompt(request: MealSuggestionRequest): string {
   const basePrompt = buildUserPrompt(request);
-  
+
   let excludeNote = "";
   if (request.excludeMeals && request.excludeMeals.length > 0) {
     excludeNote = `\n\n⚠️ IMPORTANT: Do NOT suggest any of these meals as they were already suggested: ${request.excludeMeals.join(", ")}. Provide completely DIFFERENT meal ideas.`;
   }
-  
+
   return `${basePrompt}${excludeNote}
 
 Based on the above preferences and constraints, suggest 2-3 DIVERSE and CREATIVE meal options. Each suggestion MUST:
@@ -302,32 +296,32 @@ Be creative and suggest varied options - for example, if one dish is a soup, mak
 
 function buildFullRecipePrompt(request: MealSuggestionRequest): string {
   const parts: string[] = [];
-  
+
   parts.push(`Please provide the complete recipe for "${request.selectedMeal?.name}".`);
   parts.push(`\nDescription: ${request.selectedMeal?.description}`);
-  
+
   if (request.portions && request.portions > 1) {
     parts.push(`\nPlease scale the recipe for ${request.portions} portions.`);
   }
-  
+
   // Include all the constraints that must be followed
   if (request.selectedRestrictions.length > 0) {
     parts.push(`\n⚠️ IMPORTANT - Dietary restrictions (must be strictly followed): ${request.selectedRestrictions.join(", ")}.`);
   }
-  
+
   if (request.selectedEquipment.length > 0) {
     parts.push(`\nAvailable kitchen equipment: ${request.selectedEquipment.join(", ")}.`);
   }
-  
+
   if (request.spicyLevel && request.spicyLevel !== "none") {
     const spicyDescriptions: Record<string, string> = {
       mild: "mildly spiced",
-      medium: "moderately spicy", 
+      medium: "moderately spicy",
       hot: "very spicy/hot",
     };
     parts.push(`\nSpice level: ${spicyDescriptions[request.spicyLevel] || request.spicyLevel}.`);
   }
-  
+
   if (request.ingredients && request.ingredientSource === "use-my-ingredients") {
     parts.push(`\nPlease prioritize using these available ingredients: ${request.ingredients}`);
   }
@@ -369,7 +363,7 @@ export async function POST(req: Request) {
   try {
     const json = await req.json();
     console.log("[meal-suggestions] Received request:", JSON.stringify(json, null, 2));
-    
+
     const body: MealSuggestionRequest = {
       flowType: json.flowType,
       ingredientSource: json.ingredientSource,
@@ -379,7 +373,6 @@ export async function POST(req: Request) {
       selectedEquipment: json.selectedEquipment || [],
       spicyLevel: json.spicyLevel,
       quickPreferences: json.quickPreferences || [],
-      additionalPreferences: json.additionalPreferences,
       cookingTime: json.cookingTime,
       mealType: json.mealType,
       extraInfo: json.extraInfo,
