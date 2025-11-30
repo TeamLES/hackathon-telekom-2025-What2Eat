@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/database.types";
+import { getLocalDateString } from "@/lib/utils";
 
 type SelectedMeal = {
   name: string;
@@ -137,7 +138,7 @@ export async function saveAiRecipeAction(
   }
 
   // Add to meal plan for today (or specified date)
-  const targetDate = planDate || new Date().toISOString().split("T")[0];
+  const targetDate = planDate || getLocalDateString();
   
   // Get or create meal plan for the target date
   let { data: mealPlan } = await supabase

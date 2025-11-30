@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { DashboardClient } from "@/components/dashboard-client";
+import { getLocalDateString } from "@/lib/utils";
 
 async function getUserData() {
   const supabase = await createClient();
@@ -30,7 +31,7 @@ async function getUserData() {
 
 async function getTodayNutrition(userId: string) {
   const supabase = await createClient();
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDateString();
 
   // Get today's meal plan
   const { data: mealPlan } = await supabase

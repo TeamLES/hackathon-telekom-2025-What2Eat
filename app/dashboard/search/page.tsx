@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { createClient } from "@/lib/supabase/client";
-import { cn } from "@/lib/utils";
+import { cn, getLocalDateString } from "@/lib/utils";
 import { CookingAnimation } from "@/components/cooking-animation";
 
 interface MealSuggestion {
@@ -300,7 +300,7 @@ export default function SearchPage() {
   };
 
   // Get today's date in YYYY-MM-DD format for min date
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDateString();
 
   return (
     <div className="container mx-auto p-4 md:p-6 max-w-4xl">

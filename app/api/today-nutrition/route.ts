@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getLocalDateString } from "@/lib/utils";
 
 export async function GET() {
   try {
@@ -9,7 +10,7 @@ export async function GET() {
       return Response.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateString();
 
     // Get today's meal plan
     const { data: mealPlan } = await supabase

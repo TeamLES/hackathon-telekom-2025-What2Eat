@@ -432,14 +432,18 @@ export type Database = {
           breakfast_heavy: boolean | null
           budget_level: Database["public"]["Enums"]["budget_level_type"] | null
           calorie_target: number | null
+          carbs_target_g: number | null
           cooking_skill:
             | Database["public"]["Enums"]["cooking_skill_level"]
             | null
           created_at: string | null
           dinner_heavy: boolean | null
+          fat_target_g: number | null
           gender: Database["public"]["Enums"]["gender_type"] | null
           height_cm: number | null
           is_calorie_target_manual: boolean | null
+          is_carbs_target_manual: boolean | null
+          is_fat_target_manual: boolean | null
           is_morning_person: boolean | null
           is_night_person: boolean | null
           is_protein_target_manual: boolean | null
@@ -463,14 +467,18 @@ export type Database = {
           breakfast_heavy?: boolean | null
           budget_level?: Database["public"]["Enums"]["budget_level_type"] | null
           calorie_target?: number | null
+          carbs_target_g?: number | null
           cooking_skill?:
             | Database["public"]["Enums"]["cooking_skill_level"]
             | null
           created_at?: string | null
           dinner_heavy?: boolean | null
+          fat_target_g?: number | null
           gender?: Database["public"]["Enums"]["gender_type"] | null
           height_cm?: number | null
           is_calorie_target_manual?: boolean | null
+          is_carbs_target_manual?: boolean | null
+          is_fat_target_manual?: boolean | null
           is_morning_person?: boolean | null
           is_night_person?: boolean | null
           is_protein_target_manual?: boolean | null
@@ -494,14 +502,18 @@ export type Database = {
           breakfast_heavy?: boolean | null
           budget_level?: Database["public"]["Enums"]["budget_level_type"] | null
           calorie_target?: number | null
+          carbs_target_g?: number | null
           cooking_skill?:
             | Database["public"]["Enums"]["cooking_skill_level"]
             | null
           created_at?: string | null
           dinner_heavy?: boolean | null
+          fat_target_g?: number | null
           gender?: Database["public"]["Enums"]["gender_type"] | null
           height_cm?: number | null
           is_calorie_target_manual?: boolean | null
+          is_carbs_target_manual?: boolean | null
+          is_fat_target_manual?: boolean | null
           is_morning_person?: boolean | null
           is_night_person?: boolean | null
           is_protein_target_manual?: boolean | null

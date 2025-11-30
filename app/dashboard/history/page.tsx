@@ -1,5 +1,6 @@
 import { MealPlanCalendar } from "@/components/meal-plan-calendar";
 import { createClient } from "@/lib/supabase/server";
+import { getLocalDateString } from "@/lib/utils";
 
 interface Recipe {
   id: number;
@@ -62,8 +63,8 @@ async function getMealPlans() {
       )
     `)
     .eq("user_id", authData.user.id)
-    .gte("plan_date", startDate.toISOString().split("T")[0])
-    .lte("plan_date", endDate.toISOString().split("T")[0])
+    .gte("plan_date", getLocalDateString(startDate))
+    .lte("plan_date", getLocalDateString(endDate))
     .order("plan_date", { ascending: true });
 
   if (error) {
