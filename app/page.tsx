@@ -250,7 +250,7 @@ export default async function Home() {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-            <p>Built with ❤️ by: Miroslav Hanisko, Matej Bendík, Oliver Fecko, Jakub Janok, Lukáš Čeč</p>
+            <p>Built with ❤️ by: TEAM LES</p>
           </div>
         </div>
       </footer>
