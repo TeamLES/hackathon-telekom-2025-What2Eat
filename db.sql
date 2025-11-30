@@ -303,28 +303,6 @@ create table public.user_food_dislikes (
 -- 3) PANTRY / FRIDGE (DATA)
 -- =========================================
 
-create table public.ingredients_catalog (
-    id bigserial primary key,
-    name text not null,
-    category text,
-    default_unit text,
-    created_at timestamptz default now()
-);
-
-create table public.pantry_items (
-    id bigserial primary key,
-    user_id uuid not null references auth.users (id) on delete cascade,
-    ingredient_id bigint references public.ingredients_catalog (id) on delete set null,
-    name text not null,
-    quantity numeric(10, 2),
-    unit text,
-    usually_have boolean default false,
-    expires_at date,
-    created_at timestamptz default now(),
-    updated_at timestamptz default now()
-);
-
-create index pantry_items_user_idx on public.pantry_items (user_id);
 
 -- =========================================
 -- 4) FRIDGE PHOTO SNAPSHOTS (SUPABASE BUCKETS)
@@ -342,10 +320,8 @@ create table public.fridge_snapshots (
 create table public.fridge_snapshot_items (
     id bigserial primary key,
     snapshot_id bigint not null references public.fridge_snapshots (id) on delete cascade,
-    ingredient_id bigint references public.ingredients_catalog (id) on delete set null,
     detected_name text not null,
     confidence numeric(4, 3),
-    matched_pantry_item_id bigint references public.pantry_items (id) on delete set null,
     created_at timestamptz default now()
 );
 
@@ -376,11 +352,9 @@ create table public.recipes (
 create table public.recipe_ingredients (
     id bigserial primary key,
     recipe_id bigint not null references public.recipes (id) on delete cascade,
-    ingredient_id bigint references public.ingredients_catalog (id) on delete set null,
     ingredient_name text not null,
     quantity numeric(10, 2),
-    unit text,
-    pantry_item_id bigint references public.pantry_items (id) on delete set null
+    unit text
 );
 
 create index recipe_ingredients_recipe_idx on public.recipe_ingredients (recipe_id);
@@ -432,11 +406,9 @@ create table public.grocery_lists (
 create table public.grocery_list_items (
     id bigserial primary key,
     grocery_list_id bigint not null references public.grocery_lists (id) on delete cascade,
-    ingredient_id bigint references public.ingredients_catalog (id) on delete set null,
     item_name text not null,
     quantity numeric(10, 2),
     unit text,
-    pantry_item_id bigint references public.pantry_items (id) on delete set null,
     is_checked boolean default false,
     created_at timestamptz default now()
 );
