@@ -395,7 +395,12 @@ export function SuggestionWizard({
 
   const handleIngredientSourceSelect = (source: IngredientSource) => {
     setIngredientSource(source);
-    setCurrentStep(STEPS.ingredients);
+    if (source === "go-shopping") {
+      // Skip ingredients step, go directly to preferences
+      setCurrentStep(STEPS.preferences);
+    } else {
+      setCurrentStep(STEPS.ingredients);
+    }
   };
 
   const handleNext = () => {
@@ -417,7 +422,13 @@ export function SuggestionWizard({
       setCurrentStep(STEPS.ingredientSource);
       setIngredientSource(null);
     } else if (currentStep === STEPS.preferences) {
-      setCurrentStep(STEPS.ingredients);
+      if (ingredientSource === "go-shopping") {
+        // Go back to ingredient source selection (skipping ingredients step)
+        setCurrentStep(STEPS.ingredientSource);
+        setIngredientSource(null);
+      } else {
+        setCurrentStep(STEPS.ingredients);
+      }
     } else if (currentStep === STEPS.details) {
       setCurrentStep(STEPS.preferences);
     } else if (currentStep === STEPS.portions) {
@@ -605,8 +616,14 @@ export function SuggestionWizard({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-      <div className="fixed inset-0 md:inset-4 md:m-auto md:max-w-2xl md:h-fit md:max-h-[90vh] bg-background md:rounded-xl md:border md:shadow-lg overflow-auto">
+    <div 
+      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+      onClick={() => handleClose()}
+    >
+      <div 
+        className="fixed inset-0 md:inset-4 md:m-auto md:max-w-2xl md:h-fit md:max-h-[90vh] bg-background md:rounded-xl md:border md:shadow-lg overflow-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Hidden canvas for capturing photo */}
         <canvas ref={canvasRef} className="hidden" />
 
