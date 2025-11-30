@@ -1218,7 +1218,7 @@ export function SuggestionWizard({
               <div className="space-y-3">
                 <Label>Type of meal</Label>
                 <div className="grid grid-cols-4 gap-2">
-                  {(["snack", "breakfast", "lunch", "dinner"] as const).map((type) => (
+                  {(["breakfast", "lunch", "dinner", "snack"] as const).map((type) => (
                     <Button
                       key={type}
                       type="button"
@@ -1226,6 +1226,10 @@ export function SuggestionWizard({
                       onClick={() => setMealType(type)}
                       className="capitalize"
                     >
+                      {type === "breakfast" && "🌅 "}
+                      {type === "lunch" && "☀️ "}
+                      {type === "dinner" && "🌙 "}
+                      {type === "snack" && "🍿 "}
                       {type}
                     </Button>
                   ))}
@@ -1259,6 +1263,28 @@ export function SuggestionWizard({
                   value={mealName}
                   onChange={(e) => setMealName(e.target.value)}
                 />
+              </div>
+
+              {/* Meal type */}
+              <div className="space-y-3">
+                <Label>Type of meal</Label>
+                <div className="grid grid-cols-4 gap-2">
+                  {(["breakfast", "lunch", "dinner", "snack"] as const).map((type) => (
+                    <Button
+                      key={type}
+                      type="button"
+                      variant={mealType === type ? "default" : "outline"}
+                      onClick={() => setMealType(type)}
+                      className="capitalize"
+                    >
+                      {type === "breakfast" && "🌅 "}
+                      {type === "lunch" && "☀️ "}
+                      {type === "dinner" && "🌙 "}
+                      {type === "snack" && "🍿 "}
+                      {type}
+                    </Button>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-3">
