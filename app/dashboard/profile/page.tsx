@@ -492,11 +492,11 @@ export default function ProfilePage() {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="account">👤 Account</TabsTrigger>
-          <TabsTrigger value="diet">🥗 Diet</TabsTrigger>
-          <TabsTrigger value="lifestyle">⏰ Lifestyle</TabsTrigger>
-          <TabsTrigger value="settings">⚙️ Settings</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 gap-1">
+          <TabsTrigger value="account" className="text-xs sm:text-sm px-1 sm:px-3">👤 Account</TabsTrigger>
+          <TabsTrigger value="diet" className="text-xs sm:text-sm px-1 sm:px-3">🥗 Diet</TabsTrigger>
+          <TabsTrigger value="lifestyle" className="text-xs sm:text-sm px-1 sm:px-3">⏰ Lifestyle</TabsTrigger>
+          <TabsTrigger value="settings" className="text-xs sm:text-sm px-1 sm:px-3">⚙️ Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="account" className="mt-6">
