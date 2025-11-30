@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useWizard } from "@/components/dashboard-shell";
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { ShoppingList } from "@/components/shopping-list";
 import { cn } from "@/lib/utils";
 
 interface TodayNutrition {
@@ -22,17 +23,17 @@ interface DashboardClientProps {
 }
 
 // Circular progress component
-function CircularProgress({ 
-  consumed, 
-  target, 
+function CircularProgress({
+  consumed,
+  target,
   label,
   unit = "g",
   size = 100,
   strokeWidth = 8,
   color = "stroke-primary"
-}: { 
-  consumed: number; 
-  target: number; 
+}: {
+  consumed: number;
+  target: number;
   label: string;
   unit?: string;
   size?: number;
@@ -42,7 +43,7 @@ function CircularProgress({
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
   const percentage = target > 0 ? Math.min((consumed / target) * 100, 100) : 0;
   const isOver = consumed > target;
-  
+
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDashoffset = circumference - (animatedPercentage / 100) * circumference;
@@ -111,6 +112,7 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
   const [nutrition, setNutrition] = useState<TodayNutrition>(
     todayNutrition || { calories: 0, protein: 0, carbs: 0, fat: 0 }
   );
+  const [shoppingListKey, setShoppingListKey] = useState(0);
 
   // Calculate macros if profile exists
   const proteinTarget = profile?.weight_kg ? Math.round(profile.weight_kg * 1.6) : 0;
@@ -120,7 +122,7 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
   const remainingCalories = profile?.calorie_target ? profile.calorie_target - proteinCalories - fatCalories : 0;
   const carbsTarget = remainingCalories > 0 ? Math.round(remainingCalories / 4) : 0;
 
-  // Refresh nutrition when nutritionRefreshKey changes
+  // Refresh nutrition and shopping list when nutritionRefreshKey changes
   useEffect(() => {
     if (nutritionRefreshKey > 0) {
       // Fetch updated nutrition data
@@ -132,6 +134,9 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
           }
         })
         .catch(console.error);
+
+      // Also refresh shopping list
+      setShoppingListKey(prev => prev + 1);
     }
   }, [nutritionRefreshKey]);
 
@@ -160,7 +165,7 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
           <CardHeader className="pb-6">
             <CardTitle className="text-lg">Today&apos;s Nutrition</CardTitle>
             <CardDescription>
-              {nutrition.calories > 0 || nutrition.protein > 0 
+              {nutrition.calories > 0 || nutrition.protein > 0
                 ? "Track your daily intake from saved meals"
                 : "Save meals to track your nutrition"}
             </CardDescription>
@@ -242,6 +247,9 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
           </Card>
         </div>
       </div>
+
+      {/* Shopping List */}
+      <ShoppingList key={shoppingListKey} />
 
       {/* Tips */}
       <Card className="bg-gradient-to-r from-[hsl(var(--brand-orange))]/10 to-[hsl(280,70%,50%)]/10">
