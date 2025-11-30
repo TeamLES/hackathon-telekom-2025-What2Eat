@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, X, Clock, Flame, Dumbbell } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -193,7 +194,7 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
                 {selectedMeal.description && (
                   <div className="pt-4 border-t">
                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <ReactMarkdown>{selectedMeal.description}</ReactMarkdown>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedMeal.description}</ReactMarkdown>
                     </div>
                   </div>
                 )}

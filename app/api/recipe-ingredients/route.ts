@@ -39,7 +39,7 @@ const recipeResponseSchema = z.object({
       ]).describe("Category for shopping organization"),
     })
   ).describe("Complete list of all ingredients needed"),
-  cookingInstructions: z.string().describe("Step-by-step cooking instructions in markdown format"),
+  cookingInstructions: z.string().describe("Step-by-step cooking instructions in markdown format. DO NOT include ingredients list here - only cooking steps like '1. Heat oil in pan', '2. Add onions and sauté', etc."),
   nutritionPerServing: z.object({
     caloriesKcal: z.number().nullable(),
     proteinGrams: z.number().nullable(),
@@ -59,6 +59,7 @@ CRITICAL REQUIREMENTS:
 3. Include EVERY ingredient - even salt, pepper, oil, water
 4. Use standard units: g, kg, ml, L, cups, tbsp, tsp, pieces
 5. Provide realistic nutritional estimates
+6. In "cookingInstructions", write ONLY the step-by-step cooking steps. DO NOT include an ingredients list there - ingredients are provided separately in ingredientsList.
 
 Example ingredient format:
 { "ingredientName": "olive oil", "amount": 2, "measurementUnit": "tbsp", "ingredientCategory": "oils" }

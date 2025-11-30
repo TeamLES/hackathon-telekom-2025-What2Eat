@@ -155,6 +155,7 @@ export function SuggestionWizard({
     isOptional?: boolean;
   };
   const [parsedIngredients, setParsedIngredients] = useState<ParsedIngredient[]>([]);
+  const [selectedIngredientIndices, setSelectedIngredientIndices] = useState<Set<number>>(new Set());
   const [isSavingToList, setIsSavingToList] = useState(false);
   const [savedToList, setSavedToList] = useState(false);
 
@@ -280,9 +281,10 @@ export function SuggestionWizard({
 
       const data = await response.json();
 
-      // Parse ingredients from API response
+      // Parse ingredients from API response and select all by default
       if (data.ingredients) {
         setParsedIngredients(data.ingredients);
+        setSelectedIngredientIndices(new Set(data.ingredients.map((_: unknown, i: number) => i)));
       }
 
       // Build markdown recipe from structured data
@@ -299,14 +301,8 @@ export function SuggestionWizard({
           markdown += `| ${recipe.calories || '-'} kcal | ${recipe.protein || '-'}g | ${recipe.carbs || '-'}g | ${recipe.fat || '-'}g |\n\n`;
         }
 
-        markdown += `## 🥘 Ingredients\n\n`;
-        if (data.ingredients) {
-          for (const ing of data.ingredients) {
-            const qty = ing.quantity ? `${ing.quantity}${ing.unit ? ' ' + ing.unit : ''}` : '';
-            markdown += `- ${qty ? qty + ' ' : ''}${ing.name}\n`;
-          }
-        }
-        markdown += `\n## 👨‍🍳 Instructions\n\n`;
+        // Note: Ingredients are shown in the selectable list above, not duplicated here
+        markdown += `## 👨‍🍳 Instructions\n\n`;
         markdown += recipe.instructions;
 
         setCompletion(markdown);
@@ -319,9 +315,33 @@ export function SuggestionWizard({
     }
   };
 
+  // Toggle ingredient selection
+  const toggleIngredientSelection = (index: number) => {
+    setSelectedIngredientIndices((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  };
+
+  // Select/deselect all ingredients
+  const toggleAllIngredients = () => {
+    if (selectedIngredientIndices.size === parsedIngredients.length) {
+      setSelectedIngredientIndices(new Set());
+    } else {
+      setSelectedIngredientIndices(new Set(parsedIngredients.map((_, i) => i)));
+    }
+  };
+
   // Save ingredients to shopping list
   const saveToShoppingList = async () => {
-    if (parsedIngredients.length === 0) return;
+    if (selectedIngredientIndices.size === 0) return;
+
+    const selectedIngredients = parsedIngredients.filter((_, i) => selectedIngredientIndices.has(i));
 
     setIsSavingToList(true);
     try {
@@ -330,7 +350,7 @@ export function SuggestionWizard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: mealName || "Recipe Ingredients",
-          items: parsedIngredients.map((ing) => ({
+          items: selectedIngredients.map((ing) => ({
             name: ing.name,
             quantity: ing.quantity,
             unit: ing.unit,
@@ -413,6 +433,7 @@ export function SuggestionWizard({
     setPreviouslyShownMeals([]);
     setSaveSuccess(false);
     setParsedIngredients([]);
+    setSelectedIngredientIndices(new Set());
     setIsSavingToList(false);
     setSavedToList(false);
     stopGeneration();
@@ -1386,45 +1407,71 @@ export function SuggestionWizard({
                   {/* Parsed Ingredients Card */}
                   {parsedIngredients.length > 0 && (
                     <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
                         <h4 className="font-semibold flex items-center gap-2">
                           <ShoppingCart className="w-4 h-4" />
-                          Ingredients ({parsedIngredients.length})
+                          Ingredients ({selectedIngredientIndices.size}/{parsedIngredients.length})
                         </h4>
-                        <Button
-                          size="sm"
-                          variant={savedToList ? "outline" : "default"}
-                          onClick={saveToShoppingList}
-                          disabled={isSavingToList || savedToList}
-                          className={savedToList ? "text-green-600 border-green-600" : ""}
-                        >
-                          {isSavingToList ? (
-                            <>
-                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                              Saving...
-                            </>
-                          ) : savedToList ? (
-                            <>
-                              <Check className="w-3 h-3 mr-1" />
-                              Saved to List!
-                            </>
-                          ) : (
-                            <>
-                              <ShoppingCart className="w-3 h-3 mr-1" />
-                              Save to Shopping List
-                            </>
-                          )}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={toggleAllIngredients}
+                            className="text-xs"
+                          >
+                            {selectedIngredientIndices.size === parsedIngredients.length ? "Deselect All" : "Select All"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={savedToList ? "outline" : "default"}
+                            onClick={saveToShoppingList}
+                            disabled={isSavingToList || savedToList || selectedIngredientIndices.size === 0}
+                            className={savedToList ? "text-green-600 border-green-600" : ""}
+                          >
+                            {isSavingToList ? (
+                              <>
+                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                Saving...
+                              </>
+                            ) : savedToList ? (
+                              <>
+                                <Check className="w-3 h-3 mr-1" />
+                                Saved!
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingCart className="w-3 h-3 mr-1" />
+                                Save Selected
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {parsedIngredients.map((ing, index) => (
-                          <div
+                          <button
                             key={index}
+                            onClick={() => toggleIngredientSelection(index)}
                             className={cn(
-                              "flex items-center gap-2 p-2 rounded bg-background border text-sm",
+                              "flex items-center gap-2 p-2 rounded-lg border text-sm text-left transition-all",
+                              selectedIngredientIndices.has(index)
+                                ? "bg-green-50 dark:bg-green-950/30 border-green-500 shadow-sm"
+                                : "bg-background border-border hover:bg-muted/50 hover:border-muted-foreground/50",
                               ing.isOptional && "opacity-70"
                             )}
                           >
+                            <div
+                              className={cn(
+                                "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all",
+                                selectedIngredientIndices.has(index)
+                                  ? "bg-green-500 border-green-500"
+                                  : "border-gray-400 dark:border-gray-500"
+                              )}
+                            >
+                              {selectedIngredientIndices.has(index) && (
+                                <Check className="w-3.5 h-3.5 text-white" />
+                              )}
+                            </div>
                             <span className="text-muted-foreground w-16 text-right flex-shrink-0">
                               {ing.quantity && ing.quantity}
                               {ing.unit && ` ${ing.unit}`}
@@ -1433,7 +1480,7 @@ export function SuggestionWizard({
                             {ing.isOptional && (
                               <span className="text-xs text-muted-foreground">(optional)</span>
                             )}
-                          </div>
+                          </button>
                         ))}
                       </div>
                     </div>

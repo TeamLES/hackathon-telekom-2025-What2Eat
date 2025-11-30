@@ -46,11 +46,9 @@ function mapDifficultyToEnum(
 
 /**
  * Parse nutritional information from the recipe markdown.
- * Looks for patterns like:
+ * Supports multiple formats:
  * - **Calories**: 450 kcal
- * - **Protein**: 25g
- * - **Carbohydrates**: 30g
- * - **Fat**: 15g
+ * - Markdown tables: | 450 kcal | 25g | 30g | 15g |
  */
 function parseNutritionFromMarkdown(markdown: string): ParsedNutrition {
   const result: ParsedNutrition = {
@@ -60,26 +58,52 @@ function parseNutritionFromMarkdown(markdown: string): ParsedNutrition {
     fat: null,
   };
 
+  // Try table format first (| Calories | Protein | Carbs | Fat |)
+  // Look for row with numbers: | 450 kcal | 25g | 30g | 15g |
+  const tableRowMatch = markdown.match(/\|\s*(\d+)\s*kcal\s*\|\s*(\d+)\s*g?\s*\|\s*(\d+)\s*g?\s*\|\s*(\d+)\s*g?\s*\|/i);
+  if (tableRowMatch) {
+    result.calories = parseInt(tableRowMatch[1], 10);
+    result.protein = parseInt(tableRowMatch[2], 10);
+    result.carbs = parseInt(tableRowMatch[3], 10);
+    result.fat = parseInt(tableRowMatch[4], 10);
+    return result;
+  }
+
+  // Try alternative table format: | 450 | 25 | 30 | 15 |
+  const simpleTableMatch = markdown.match(/\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|/);
+  if (simpleTableMatch) {
+    result.calories = parseInt(simpleTableMatch[1], 10);
+    result.protein = parseInt(simpleTableMatch[2], 10);
+    result.carbs = parseInt(simpleTableMatch[3], 10);
+    result.fat = parseInt(simpleTableMatch[4], 10);
+    return result;
+  }
+
+  // Fallback: Match individual patterns
   // Match calories (supports "450 kcal", "450kcal", "450 calories", just "450")
-  const caloriesMatch = markdown.match(/\*\*Calories\*\*:\s*(\d+)/i);
+  const caloriesMatch = markdown.match(/\*\*Calories\*\*:\s*(\d+)/i) ||
+    markdown.match(/Calories[:\s]+(\d+)/i);
   if (caloriesMatch) {
     result.calories = parseInt(caloriesMatch[1], 10);
   }
 
   // Match protein
-  const proteinMatch = markdown.match(/\*\*Protein\*\*:\s*(\d+)/i);
+  const proteinMatch = markdown.match(/\*\*Protein\*\*:\s*(\d+)/i) ||
+    markdown.match(/Protein[:\s]+(\d+)/i);
   if (proteinMatch) {
     result.protein = parseInt(proteinMatch[1], 10);
   }
 
   // Match carbohydrates (also check for "Carbs")
-  const carbsMatch = markdown.match(/\*\*(Carbohydrates|Carbs)\*\*:\s*(\d+)/i);
+  const carbsMatch = markdown.match(/\*\*(Carbohydrates|Carbs)\*\*:\s*(\d+)/i) ||
+    markdown.match(/(Carbohydrates|Carbs)[:\s]+(\d+)/i);
   if (carbsMatch) {
     result.carbs = parseInt(carbsMatch[2], 10);
   }
 
   // Match fat
-  const fatMatch = markdown.match(/\*\*Fat\*\*:\s*(\d+)/i);
+  const fatMatch = markdown.match(/\*\*Fat\*\*:\s*(\d+)/i) ||
+    markdown.match(/Fat[:\s]+(\d+)/i);
   if (fatMatch) {
     result.fat = parseInt(fatMatch[1], 10);
   }
@@ -106,7 +130,7 @@ export async function saveAiRecipeAction(
 
   const cookTimeMinutes = parseEstimatedTimeToMinutes(selectedMeal.estimatedTime);
   const difficultyEnum = mapDifficultyToEnum(selectedMeal.difficulty);
-  
+
   // Parse nutritional information from the recipe markdown
   const nutrition = parseNutritionFromMarkdown(fullRecipeMarkdown);
   console.log("[saveAiRecipeAction] Parsed nutrition:", nutrition);
@@ -139,7 +163,7 @@ export async function saveAiRecipeAction(
 
   // Add to meal plan for today (or specified date)
   const targetDate = planDate || getLocalDateString();
-  
+
   // Get or create meal plan for the target date
   let { data: mealPlan } = await supabase
     .from("meal_plans")
@@ -176,8 +200,8 @@ export async function saveAiRecipeAction(
     .order("position", { ascending: false })
     .limit(1);
 
-  const nextPosition = existingItems && existingItems.length > 0 
-    ? (existingItems[0].position || 0) + 1 
+  const nextPosition = existingItems && existingItems.length > 0
+    ? (existingItems[0].position || 0) + 1
     : 1;
 
   // Add recipe to meal plan
