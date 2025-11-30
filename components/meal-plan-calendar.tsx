@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, X, Clock, Flame, Dumbbell } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, X, Clock, Flame, Dumbbell, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { IngredientChecklist, Ingredient } from "@/components/ingredient-checklist";
 
 interface MealItem {
   id: string;
@@ -52,6 +53,30 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedMeal, setSelectedMeal] = useState<MealItem | null>(null);
+
+  // Ingredients state for modal
+  const [mealIngredients, setMealIngredients] = useState<Ingredient[]>([]);
+  const [loadingIngredients, setLoadingIngredients] = useState(false);
+  const [showIngredients, setShowIngredients] = useState(false);
+
+  // Owned ingredients from shopping lists (checked items)
+  const [ownedIngredients, setOwnedIngredients] = useState<string[]>([]);
+
+  // Fetch owned ingredients on mount
+  useEffect(() => {
+    const fetchOwnedIngredients = async () => {
+      try {
+        const response = await fetch("/api/owned-ingredients");
+        if (response.ok) {
+          const data = await response.json();
+          setOwnedIngredients(data.ownedIngredients || []);
+        }
+      } catch (error) {
+        console.error("Error fetching owned ingredients:", error);
+      }
+    };
+    fetchOwnedIngredients();
+  }, []);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -106,8 +131,64 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
     setSelectedMeal(null);
   };
 
-  const handleMealClick = (meal: MealItem) => {
+  const handleMealClick = async (meal: MealItem) => {
     setSelectedMeal(meal);
+    setMealIngredients([]);
+    setShowIngredients(false);
+
+    // Auto-load ingredients if meal has description
+    if (meal.description) {
+      setLoadingIngredients(true);
+      try {
+        const params = new URLSearchParams();
+        if (meal.recipeId) {
+          params.set("recipeId", meal.recipeId.toString());
+        } else {
+          params.set("description", meal.description);
+          params.set("name", meal.name);
+        }
+
+        const response = await fetch(`/api/meal-ingredients?${params}`);
+        if (response.ok) {
+          const data = await response.json();
+          setMealIngredients(data.ingredients || []);
+          setShowIngredients(true);
+        }
+      } catch (error) {
+        console.error("Error loading ingredients:", error);
+      } finally {
+        setLoadingIngredients(false);
+      }
+    }
+  };
+
+
+
+  // Save ingredients to shopping list
+  const saveToShoppingList = async (ingredients: Ingredient[]) => {
+    const response = await fetch("/api/grocery-list", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: selectedMeal?.name || "Shopping List",
+        items: ingredients.map((ing) => ({
+          name: ing.name,
+          quantity: ing.quantity,
+          unit: ing.unit,
+        })),
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to save");
+    }
+
+    // Refresh owned ingredients after saving
+    const ownedResponse = await fetch("/api/owned-ingredients");
+    if (ownedResponse.ok) {
+      const data = await ownedResponse.json();
+      setOwnedIngredients(data.ownedIngredients || []);
+    }
   };
 
   // Generate calendar grid
@@ -127,11 +208,11 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
     <div className="space-y-4">
       {/* Meal Detail Modal */}
       {selectedMeal && (
-        <div 
+        <div
           className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setSelectedMeal(null)}
         >
-          <Card 
+          <Card
             className="w-full max-w-2xl max-h-[90vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
@@ -193,6 +274,29 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
                     <span className={cn("text-sm font-medium", DIFFICULTY_LABELS[selectedMeal.difficulty].color)}>
                       {DIFFICULTY_LABELS[selectedMeal.difficulty].label}
                     </span>
+                  </div>
+                )}
+
+                {/* Ingredients Section - Show at top */}
+                {selectedMeal.description && (
+                  <div className="pt-4 border-t">
+                    {loadingIngredients ? (
+                      <div className="flex items-center justify-center py-4 text-muted-foreground">
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Extracting ingredients...
+                      </div>
+                    ) : mealIngredients.length > 0 ? (
+                      <IngredientChecklist
+                        ingredients={mealIngredients}
+                        title={`Ingredients`}
+                        userOwnedIngredients={ownedIngredients}
+                        onSaveToList={saveToShoppingList}
+                      />
+                    ) : showIngredients ? (
+                      <p className="text-sm text-muted-foreground italic text-center py-2">
+                        Could not extract ingredients from this recipe.
+                      </p>
+                    ) : null}
                   </div>
                 )}
 
