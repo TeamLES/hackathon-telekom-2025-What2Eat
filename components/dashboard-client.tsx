@@ -29,7 +29,9 @@ function CircularProgress({
   label,
   unit = "g",
   size = 100,
+  mobileSize,
   strokeWidth = 8,
+  mobileStrokeWidth,
   color = "stroke-primary"
 }: {
   consumed: number;
@@ -37,14 +39,28 @@ function CircularProgress({
   label: string;
   unit?: string;
   size?: number;
+  mobileSize?: number;
   strokeWidth?: number;
+  mobileStrokeWidth?: number;
   color?: string;
 }) {
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const actualSize = isMobile && mobileSize ? mobileSize : size;
+  const actualStrokeWidth = isMobile && mobileStrokeWidth ? mobileStrokeWidth : strokeWidth;
   const percentage = target > 0 ? Math.min((consumed / target) * 100, 100) : 0;
   const isOver = consumed > target;
 
-  const radius = (size - strokeWidth) / 2;
+  const radius = (actualSize - actualStrokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDashoffset = circumference - (animatedPercentage / 100) * circumference;
 
@@ -58,25 +74,25 @@ function CircularProgress({
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative" style={{ width: size, height: size }}>
+      <div className="relative" style={{ width: actualSize, height: actualSize }}>
         {/* Background circle */}
         <svg className="w-full h-full -rotate-90">
           <circle
-            cx={size / 2}
-            cy={size / 2}
+            cx={actualSize / 2}
+            cy={actualSize / 2}
             r={radius}
             fill="none"
             stroke="currentColor"
-            strokeWidth={strokeWidth}
+            strokeWidth={actualStrokeWidth}
             className="text-muted/30"
           />
           {/* Progress circle */}
           <circle
-            cx={size / 2}
-            cy={size / 2}
+            cx={actualSize / 2}
+            cy={actualSize / 2}
             r={radius}
             fill="none"
-            strokeWidth={strokeWidth}
+            strokeWidth={actualStrokeWidth}
             strokeLinecap="round"
             className={cn(
               "transition-all duration-1000 ease-out",
@@ -171,14 +187,16 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
             </CardDescription>
           </CardHeader>
           <CardContent className="my-2">
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-4 sm:gap-2">
               <CircularProgress
                 consumed={nutrition.calories}
                 target={profile.calorie_target}
                 label="Calories"
                 unit=" kcal"
                 size={80}
+                mobileSize={60}
                 strokeWidth={6}
+                mobileStrokeWidth={5}
                 color="stroke-[hsl(var(--brand-orange))]"
               />
               <CircularProgress
@@ -187,7 +205,9 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
                 label="Protein"
                 unit="g"
                 size={80}
+                mobileSize={60}
                 strokeWidth={6}
+                mobileStrokeWidth={5}
                 color="stroke-[hsl(var(--brand-green))]"
               />
               <CircularProgress
@@ -196,7 +216,9 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
                 label="Carbs"
                 unit="g"
                 size={80}
+                mobileSize={60}
                 strokeWidth={6}
+                mobileStrokeWidth={5}
                 color="stroke-blue-500"
               />
               <CircularProgress
@@ -205,7 +227,9 @@ export function DashboardClient({ profile, todayNutrition, firstName }: Dashboar
                 label="Fat"
                 unit="g"
                 size={80}
+                mobileSize={60}
                 strokeWidth={6}
+                mobileStrokeWidth={5}
                 color="stroke-yellow-500"
               />
             </div>
