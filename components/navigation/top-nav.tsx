@@ -19,10 +19,7 @@ export function TopNav({ onPlusClick }: TopNavProps) {
             🍽️
           </div>
           <div className="flex flex-col">
-            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              What2Eat
-            </span>
-            <span className="text-xl font-semibold">Dashboard</span>
+            <span className="text-xl font-semibold">What2Eat</span>
           </div>
         </Link>
 
