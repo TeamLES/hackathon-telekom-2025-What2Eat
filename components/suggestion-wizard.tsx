@@ -494,6 +494,27 @@ export function SuggestionWizard({
       };
 
     startSaveTransition(async () => {
+      // Also save selected ingredients to shopping list if any are selected
+      if (selectedIngredientIndices.size > 0 && !savedToList) {
+        const selectedIngredients = parsedIngredients.filter((_, i) => selectedIngredientIndices.has(i));
+        try {
+          await fetch("/api/grocery-list", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: mealName || selectedSuggestion?.name || "Recipe Ingredients",
+              items: selectedIngredients.map((ing) => ({
+                name: ing.name,
+                quantity: ing.quantity,
+                unit: ing.unit,
+              })),
+            }),
+          });
+        } catch (error) {
+          console.error("Error saving to shopping list:", error);
+        }
+      }
+
       // Pass mealType to save to the correct meal plan slot
       const result = await saveAiRecipeAction(
         mealToSave,

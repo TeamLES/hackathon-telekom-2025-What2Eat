@@ -127,8 +127,14 @@ export function MealPlanCalendar({ meals = [] }: MealPlanCalendarProps) {
     <div className="space-y-4">
       {/* Meal Detail Modal */}
       {selectedMeal && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <Card className="w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div 
+          className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setSelectedMeal(null)}
+        >
+          <Card 
+            className="w-full max-w-2xl max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <div className="flex-shrink-0 bg-background p-4 border-b flex items-start justify-between">
               <div className="flex items-center gap-3">
