@@ -2,14 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Calendar, User } from "lucide-react";
+import { Home, Search, Calendar, CalendarPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navItems = [
+const leftNavItems = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/dashboard/search", label: "Search", icon: Search },
+];
+
+const rightNavItems = [
+  { href: "/dashboard/meal-planner", label: "Planner", icon: CalendarPlus },
   { href: "/dashboard/history", label: "Calendar", icon: Calendar },
-  { href: "/dashboard/profile", label: "Profile", icon: User },
 ];
 
 interface BottomNavProps {
@@ -19,30 +22,32 @@ interface BottomNavProps {
 export function BottomNav({ onPlusClick }: BottomNavProps) {
   const pathname = usePathname();
 
+  const renderNavItem = (item: typeof leftNavItems[0]) => {
+    const isActive = pathname === item.href;
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={cn(
+          "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px]",
+          isActive
+            ? "text-primary"
+            : "text-muted-foreground hover:text-foreground"
+        )}
+      >
+        <item.icon className={cn("w-6 h-6", isActive && "text-[hsl(var(--brand-orange))]")} />
+        <span className={cn("text-xs font-medium", isActive && "text-[hsl(var(--brand-orange))]")}>
+          {item.label}
+        </span>
+      </Link>
+    );
+  };
+
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
       <div className="flex items-center justify-around h-16 px-2">
-        {/* First two nav items */}
-        {navItems.slice(0, 2).map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px]",
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <item.icon className={cn("w-6 h-6", isActive && "text-[hsl(var(--brand-orange))]")} />
-              <span className={cn("text-xs font-medium", isActive && "text-[hsl(var(--brand-orange))]")}>
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
+        {/* Left nav items */}
+        {leftNavItems.map(renderNavItem)}
 
         {/* Plus button in the middle */}
         <button
@@ -65,27 +70,8 @@ export function BottomNav({ onPlusClick }: BottomNavProps) {
           </svg>
         </button>
 
-        {/* Last two nav items */}
-        {navItems.slice(2).map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px]",
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <item.icon className={cn("w-6 h-6", isActive && "text-[hsl(var(--brand-orange))]")} />
-              <span className={cn("text-xs font-medium", isActive && "text-[hsl(var(--brand-orange))]")}>
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
+        {/* Right nav items */}
+        {rightNavItems.map(renderNavItem)}
       </div>
     </nav>
   );

@@ -1,16 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Plus, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { LogoutButton } from "@/components/logout-button";
+import { cn } from "@/lib/utils";
 
 interface TopNavProps {
   onPlusClick: () => void;
 }
 
 export function TopNav({ onPlusClick }: TopNavProps) {
+  const pathname = usePathname();
+  const isProfileActive = pathname === "/dashboard/profile";
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-gradient-to-b from-background/95 via-background/90 to-background/75 dark:from-[#141414]/85 dark:via-[#141414]/70 dark:to-[#141414]/55 backdrop-blur supports-[backdrop-filter]:bg-background/65 ring-1 ring-black/5 dark:ring-white/12 shadow-[0_8px_18px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_45px_rgba(0,0,0,0.3)]">
       <div className="flex h-20 items-center gap-4 px-4 md:px-8">
@@ -31,6 +36,20 @@ export function TopNav({ onPlusClick }: TopNavProps) {
             <Plus className="h-4 w-4" />
             <span className="hidden lg:inline">New Suggestion</span>
           </Button>
+
+          {/* Profile button - mobile only */}
+          <Link
+            href="/dashboard/profile"
+            className={cn(
+              "md:hidden flex items-center justify-center w-10 h-10 rounded-full transition-colors",
+              isProfileActive
+                ? "bg-[hsl(var(--brand-orange))]/20 text-[hsl(var(--brand-orange))]"
+                : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
+            <User className="w-5 h-5" />
+          </Link>
+
           <ThemeSwitcher />
           <LogoutButton />
         </div>
